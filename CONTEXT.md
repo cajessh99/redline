@@ -40,8 +40,8 @@ Reason: these documents are take-it-or-leave-it. A counter-offer to a gym is a j
 harm the research found there (missed notice windows) is solved by a reminder, not a summary.
 Given up: the segment with the loudest pain and the only regulator complaint data. The top-ranked
 clause type in the research (auto-renewal) becomes a secondary concern.
-Follow-up: `CLAUDE.md` line 3 still lists "terms of service" as an accepted document type and
-needs to be revised to match. Not changed during the session; the owner edits settled decisions.
+Follow-up, done 2026-11-13 at the owner's request: `CLAUDE.md` line 3 no longer lists "terms of
+service" and now names the four accepted document types.
 
 ### D3. Within the primary segment, the words are written for the occasional freelancer (2026-11-13)
 Someone who signs two or three client contracts a year, does not know what is normal, and needs

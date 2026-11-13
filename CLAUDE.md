@@ -1,7 +1,8 @@
 # Redline
 
-Web app: a user uploads a contract, lease, freelance agreement, or terms of service and gets a
-plain English summary of the clauses that could hurt them. No application code exists yet.
+Web app: a user uploads a client contract, vendor or supplier contract, employment offer or
+non-compete, or lease and gets a plain English summary of the clauses that could hurt them.
+Terms of service are not accepted (see PRD.md, section 7). No application code exists yet.
 
 ## Capabilities (the complete scope)
 - Clauses that could hurt the user, ranked by severity, each showing its exact source sentence
@@ -50,7 +51,7 @@ plain English summary of the clauses that could hurt them. No application code e
 
 ## Pointers
 - research/summary.md holds the user research. Read it before deciding what the product should do.
-- The brief will live in PRD.md once it exists. Read it before building.
+- PRD.md is the brief. Read it before building. CONTEXT.md records why each decision in it was made.
 
 ## Agent skills
 - Issue tracker: local markdown under `.scratch/`. See `docs/agents/issue-tracker.md`.
