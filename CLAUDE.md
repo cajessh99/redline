@@ -10,6 +10,7 @@ Terms of service are not accepted (see PRD.md, section 7). No application code e
 - A question box that answers only from the uploaded document
 - An editable list of the user's own red lines, which drives the analysis
 - A saved library of past documents
+- A landing page that says what Redline does and leads to sign-up
 
 ## Settled decisions (do not reinterpret)
 - Next.js, with Supabase for auth and database, deployed on Vercel.

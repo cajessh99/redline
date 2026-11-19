@@ -64,7 +64,7 @@ Capabilities (the complete scope, per CLAUDE.md and PRD.md section 3):
 - An editable list of red lines: five on by default, six offered and switched off.
 - A receipt, one line per red line, when few or no flags match.
 - A saved library of past documents, private to each reader.
-- A landing page (confirmed by the owner 2026-11-19; it is not yet in CLAUDE.md's capability list).
+- A landing page (confirmed by the owner 2026-11-19).
 
 Constraints:
 - The file is parsed in the browser; only extracted text is stored.
