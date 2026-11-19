@@ -1,0 +1,738 @@
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url("/fonts/archivo-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url("/fonts/archivo-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Archivo Narrow";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/archivo-narrow-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Archivo Narrow";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/archivo-narrow-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Source Serif 4";
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url("/fonts/source-serif-4-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Source Serif 4";
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url("/fonts/source-serif-4-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Source Serif 4";
+  font-style: italic;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url("/fonts/source-serif-4-italic-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  /* Desk and paper */
+  --desk: #d6d5cf;
+  --desk-deep: #c9c8c1;
+  --paper: #f7f6f1;
+  --paper-bright: #fcfbf7;
+  --toner: #171716;
+  --toner-soft: #4a4944;
+  --rule: #c7c5bc;
+  --highlight: #f1e15a;
+
+  /* Tier inks: always paired with the tier word */
+  --severe: #b9381f;
+  --severe-on: #ffffff;
+  --severe-wash: #f4ddd6;
+  --moderate: #e2a11b;
+  --moderate-on: #171716;
+  --moderate-wash: #f7e9c9;
+  --minor: #2c6f7b;
+  --minor-on: #ffffff;
+  --minor-wash: #dbe9eb;
+
+  /* Tab plastic, as RGB triplets: clear where it lies on the page, dense past the edge */
+  --severe-ink: 158 44 21;
+  --moderate-ink: 226 161 27;
+  --minor-ink: 31 85 96;
+
+  --sans: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --display: "Archivo Narrow", "Arial Narrow", sans-serif;
+  --serif: "Source Serif 4", Georgia, serif;
+
+  --gutter: clamp(16px, 4vw, 64px);
+  --sheet-pad: clamp(20px, 3.4vw, 52px);
+  --sheet-pad-r: clamp(44px, 4vw, 60px);
+  --tab-in: clamp(32px, 3vw, 44px);
+  --tab-out: clamp(66px, 6vw, 88px);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --paper-shadow: 0 1px 2px rgb(23 23 22 / 0.12), 0 14px 36px -10px rgb(23 23 22 / 0.28);
+
+  color-scheme: light;
+  scrollbar-color: var(--toner-soft) var(--desk);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  background: var(--desk);
+  color: var(--toner);
+  font-family: var(--sans);
+  font-weight: 450;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  overflow-x: clip;
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: var(--highlight);
+  color: var(--toner);
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 0.22em;
+  text-decoration-thickness: 1.5px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--toner);
+  outline-offset: 3px;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  text-wrap: balance;
+  margin: 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Masthead */
+
+.masthead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 22px var(--gutter) 0;
+}
+
+.wordmark {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.625rem;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.quiet-link {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.quiet-link:hover {
+  text-decoration-thickness: 2.5px;
+}
+
+/* Opening */
+
+.opening {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: clamp(20px, 3vw, 48px);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(28px, 6vh, 72px) var(--gutter) clamp(56px, 8vw, 112px);
+  align-items: start;
+}
+
+.pitch {
+  grid-column: 1 / span 5;
+  padding-top: clamp(8px, 4vh, 48px);
+}
+
+h1 {
+  font-weight: 700;
+  font-size: clamp(2.6rem, 5vw, 4.9rem);
+  line-height: 0.98;
+  letter-spacing: -0.015em;
+}
+
+.support {
+  margin: 1.4rem 0 2rem;
+  max-width: 34rem;
+  font-size: clamp(1.0625rem, 1.25vw, 1.1875rem);
+  color: var(--toner);
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 0 30px;
+  background: var(--toner);
+  color: var(--paper-bright);
+  font-weight: 700;
+  font-stretch: 90%;
+  font-size: 1.1875rem;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgb(23 23 22 / 0.2), 0 10px 22px -12px rgb(23 23 22 / 0.6);
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out), background 0.2s;
+}
+
+.action:hover {
+  background: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgb(23 23 22 / 0.2), 0 16px 28px -12px rgb(23 23 22 / 0.6);
+}
+
+.action:active {
+  transform: translateY(0);
+}
+
+.types {
+  margin: 1.4rem 0 0;
+  max-width: 30rem;
+  font-size: 0.9375rem;
+  color: var(--toner-soft);
+}
+
+/* The sheet */
+
+.desk {
+  grid-column: 6 / span 7;
+  padding-right: var(--tab-out);
+}
+
+.sheet {
+  position: relative;
+  margin: 0;
+  background: var(--paper);
+  padding: var(--sheet-pad) var(--sheet-pad-r) calc(var(--sheet-pad) * 1.2) var(--sheet-pad);
+  box-shadow: var(--paper-shadow);
+  font-family: var(--serif);
+  font-size: clamp(0.98rem, 1.15vw, 1.0625rem);
+  line-height: 1.62;
+}
+
+.sheet-note {
+  font-family: var(--sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--toner-soft);
+  padding-bottom: 0.9rem;
+  margin-bottom: 1.4rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.sheet-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.2em;
+  letter-spacing: 0.01em;
+}
+
+.sheet-parties {
+  margin: 0.2rem 0 1.4rem;
+  color: var(--toner-soft);
+  font-style: italic;
+}
+
+.clauses {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.clause {
+  position: relative;
+  margin: 0 0 0.95em;
+}
+
+.clause-no {
+  font-weight: 600;
+  margin-right: 0.15em;
+}
+
+mark {
+  background: var(--highlight);
+  color: inherit;
+  padding: 0.04em 0.12em;
+  margin: 0 -0.12em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  mix-blend-mode: multiply;
+}
+
+.sheet-hint {
+  margin: 0.9rem 0 0;
+  font-size: 0.875rem;
+  color: var(--toner-soft);
+}
+
+/* Tabs: part on the page, part past its edge */
+
+.tab {
+  position: absolute;
+  top: 0.05em;
+  right: calc(-1 * (var(--sheet-pad-r) + var(--tab-out)));
+  width: calc(var(--tab-in) + var(--tab-out));
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0;
+  border: 0;
+  border-radius: 0 3px 3px 0;
+  cursor: pointer;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 1px 1px rgb(23 23 22 / 0.18), 2px 3px 6px -2px rgb(23 23 22 / 0.3);
+  transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
+  animation: stick 0.5s var(--ease-out) both;
+}
+
+.tab {
+  background: none;
+  isolation: isolate;
+}
+
+/* Clear plastic over the page: the paper, the sheet edge and its shadow read through. */
+.tab::before,
+.tab::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: -1;
+}
+
+.tab::before {
+  left: 0;
+  width: var(--tab-in);
+  background: rgb(var(--ink) / 0.42);
+}
+
+/* Inked past the edge, where the tier word is printed. */
+.tab::after {
+  right: 0;
+  width: var(--tab-out);
+  background: rgb(var(--ink) / 0.94);
+  border-radius: 0 3px 3px 0;
+}
+
+.clause-flagged[data-tier="severe"] .tab { --ink: var(--severe-ink); color: var(--severe-on); }
+.clause-flagged[data-tier="moderate"] .tab { --ink: var(--moderate-ink); color: var(--moderate-on); }
+.clause-flagged[data-tier="minor"] .tab { --ink: var(--minor-ink); color: var(--minor-on); }
+
+.tab-word {
+  width: var(--tab-out);
+  text-align: center;
+}
+
+.tab:hover,
+.tab[aria-expanded="true"] {
+  transform: translateX(8px);
+  box-shadow: 0 1px 1px rgb(23 23 22 / 0.18), 4px 5px 10px -3px rgb(23 23 22 / 0.35);
+}
+
+.clauses > li:nth-child(4) .tab { animation-delay: 0.15s; }
+.clauses > li:nth-child(5) .tab { animation-delay: 0.3s; }
+.clauses > li:nth-child(6) .tab { animation-delay: 0.45s; }
+
+@keyframes stick {
+  from {
+    opacity: 0;
+    transform: translateX(40px) rotate(3deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The flag slip */
+
+/* The slip is the tab pulled out: its ink, square, running past the sheet edge to the tab's end. */
+.slip {
+  margin: 0.7em calc(-1 * (var(--sheet-pad-r) + var(--tab-out))) 0.6em 0;
+  padding: 1rem calc(var(--sheet-pad-r) + var(--tab-out) - 8px) 1.15rem 1.1rem;
+  font-family: var(--sans);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  animation: pull 0.45s var(--ease-out);
+}
+
+[data-tier="severe"] .slip { background: var(--severe-wash); }
+[data-tier="moderate"] .slip { background: var(--moderate-wash); }
+[data-tier="minor"] .slip { background: var(--minor-wash); }
+
+.slip[hidden] {
+  display: none;
+}
+
+@keyframes pull {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.slip-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 0 0 0.6rem;
+}
+
+.slip-line {
+  font-weight: 700;
+}
+
+.slip-statement {
+  margin: 0 0 0.9rem;
+  font-size: 1.0625rem;
+  font-weight: 500;
+}
+
+.slip-label {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--toner-soft);
+}
+
+.slip-source {
+  margin: 0 0 0.9rem;
+  padding: 0;
+  font-family: var(--serif);
+  font-size: 1rem;
+}
+
+.slip-source::before { content: "\201C"; }
+.slip-source::after { content: "\201D"; }
+
+.slip-counter {
+  margin: 0;
+  font-family: var(--serif);
+}
+
+/* Tier stamp: the word carries severity, the ink repeats it */
+
+.stamp {
+  display: inline-block;
+  padding: 3px 8px 2px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+[data-tier="severe"] .stamp { background: var(--severe); color: var(--severe-on); }
+[data-tier="moderate"] .stamp { background: var(--moderate); color: var(--moderate-on); }
+[data-tier="minor"] .stamp { background: var(--minor); color: var(--minor-on); }
+
+.stamp-plain {
+  background: transparent;
+  color: var(--toner-soft);
+  box-shadow: inset 0 0 0 1.5px var(--toner-soft);
+}
+
+/* Bands below the opening */
+
+.band {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(56px, 8vw, 112px) var(--gutter);
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: clamp(20px, 3vw, 48px);
+  row-gap: 2rem;
+  border-top: 1px solid var(--desk-deep);
+}
+
+.band-text {
+  grid-column: 1 / span 4;
+}
+
+h2 {
+  font-weight: 800;
+  font-size: clamp(1.85rem, 3vw, 2.75rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+h3 {
+  font-weight: 700;
+  font-size: 1.125rem;
+  margin-bottom: 0.6rem;
+}
+
+.band-text p {
+  margin: 0;
+  max-width: 32rem;
+}
+
+.result {
+  grid-column: 6 / span 7;
+  list-style: none;
+  margin: 0;
+  padding: 0.4rem var(--sheet-pad);
+  background: var(--paper);
+  box-shadow: var(--paper-shadow);
+}
+
+.result-row {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr) minmax(0, 1.5fr);
+  gap: 0.4rem 1.4rem;
+  align-items: baseline;
+  padding: 1.05rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.result-row:last-child {
+  border-bottom: 0;
+}
+
+.result-line {
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.result-source {
+  font-family: var(--serif);
+  line-height: 1.5;
+}
+
+.result-receipt .result-source {
+  font-family: var(--sans);
+  color: var(--toner-soft);
+}
+
+.red-lines-sheet {
+  grid-column: 6 / span 7;
+  margin: 0;
+  padding: 0.4rem var(--sheet-pad) 0.6rem;
+  background: var(--paper);
+  box-shadow: var(--paper-shadow);
+}
+
+.red-lines-sheet .sheet-note {
+  margin: 0.8rem 0 0;
+  padding-bottom: 0.7rem;
+}
+
+.red-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.red-lines li {
+  padding: 0.95rem 0;
+  border-bottom: 1px solid var(--rule);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.red-lines li:last-child {
+  border-bottom: 0;
+}
+
+#reads {
+  grid-column: 1 / span 4;
+}
+
+.reads {
+  grid-column: 6 / span 7;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+}
+
+.reads ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reads li {
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--desk-deep);
+}
+
+.legal {
+  grid-column: 6 / span 7;
+  margin: 0.5rem 0 0;
+  padding-top: 1.4rem;
+  border-top: 2px solid var(--toner);
+  font-weight: 600;
+  max-width: 42rem;
+}
+
+.close {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(56px, 8vw, 112px) var(--gutter) clamp(72px, 10vw, 140px);
+  border-top: 1px solid var(--desk-deep);
+}
+
+.close h2 {
+  max-width: 18ch;
+  margin-bottom: 1.6rem;
+}
+
+.close-note {
+  margin: 1.2rem 0 0;
+  color: var(--toner-soft);
+  font-size: 0.9375rem;
+}
+
+.placeholder {
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  gap: 1.2rem;
+  padding: var(--gutter);
+  text-align: center;
+}
+
+.placeholder h1 {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+}
+
+/* Narrow screens */
+
+@media (max-width: 900px) {
+  .pitch,
+  .desk,
+  .band-text,
+  .result,
+  .red-lines-sheet,
+  #reads,
+  .reads,
+  .legal {
+    grid-column: 1 / -1;
+  }
+
+  /* Phones: headline and action, then the contract, then the explanation. */
+  .pitch {
+    display: contents;
+  }
+
+  .pitch h1,
+  .pitch .action,
+  .pitch .support,
+  .pitch .types {
+    grid-column: 1 / -1;
+  }
+
+  .pitch h1 { order: 1; font-size: clamp(2rem, 8.4vw, 2.6rem); }
+  .pitch .action { order: 2; justify-self: start; margin-top: 1.25rem; }
+  .desk { order: 3; margin-top: 2rem; }
+  .pitch .support { order: 4; margin: 2rem 0 0; }
+  .pitch .types { order: 5; }
+
+  .opening { padding-top: 20px; }
+  .desk { margin-top: 1.5rem; }
+  .sheet { line-height: 1.5; }
+  .sheet-note { padding-bottom: 0.6rem; margin-bottom: 0.9rem; }
+  .sheet-parties { margin-bottom: 0.9rem; }
+  .clause { margin-bottom: 0.7em; }
+
+  .result-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .reads {
+    grid-template-columns: 1fr;
+    gap: 1.6rem;
+  }
+
+  .tab {
+    height: 36px;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
