@@ -33,8 +33,8 @@ Terms of service are not accepted (see PRD.md, section 7). No application code e
 - The question box answers "the document does not say" rather than drawing on outside knowledge.
 
 ## Credentials
-- Keep credentials in .env.local, which is gitignored. Never commit a secret: a key is public
-  the moment it is pushed and has to be rotated.
+- Keep credentials in .env.local, which is gitignored. Never commit a secret. The GitHub repo is
+  public, so a key is exposed the moment it is pushed and has to be rotated.
 - Before every commit, check the staged files for keys, tokens, and .env contents.
 - Never put a key in client-side code. The OpenRouter key stays server-side only.
 
@@ -57,3 +57,12 @@ Terms of service are not accepted (see PRD.md, section 7). No application code e
 - Issue tracker: local markdown under `.scratch/`. See `docs/agents/issue-tracker.md`.
 - Triage labels: the five default roles. See `docs/agents/triage-labels.md`.
 - Domain docs: single-context (`GLOSSARY.md` and `docs/adr/` at root). See `docs/agents/domain.md`.
+
+## Grilling
+- When grilling (`/mattpocock-skills:grilling`), ask every question as selectable options with
+  your recommendation marked. Never make the user type free text to answer.
+
+## Copy
+- All copy a user reads in this product, meaning the landing page, UI labels, error messages and
+  empty states, has to be run through the humanizer skill before it is committed. Copy that reads
+  as though a model wrote it is a defect, not a matter of taste.
