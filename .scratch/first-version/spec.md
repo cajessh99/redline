@@ -1,7 +1,7 @@
 # Spec: Redline first version
 
 Status: ready-for-agent
-Date: 2026-11-13
+Date: 2026-11-13, updated 2026-11-19 (landing page: stories 64 to 69 and its decisions, D11)
 Source: `PRD.md` (the brief), `CONTEXT.md` (decisions D1 to D10), `GLOSSARY.md` (terms),
 `docs/adr/0001-every-flag-cites-its-source.md`, `CLAUDE.md` (constraints).
 
@@ -194,6 +194,24 @@ can check every line of it against their own copy.
 63. As a developer, I want the test set of twenty real contracts (PRD section 4) kept outside the
     repository and referenced by the eval harness, so that real contracts are never committed.
 
+### Landing page
+
+Numbered after the developer stories so that earlier story numbers, which tickets cite, stay put.
+
+64. As a visitor who is not signed in, I want the first page I land on to tell me what Redline
+    does with a contract I have not signed yet, so that I can decide whether to use it.
+65. As a visitor, I want to see which document types Redline accepts and that it does not take
+    scanned documents or terms of service, so that I do not sign up for something that cannot
+    read my document.
+66. As a visitor, I want to be told that every flag shows the exact sentence it came from, so
+    that I know how Redline differs from pasting the contract into a chatbot.
+67. As a visitor, I want to reach sign-up and sign-in from the landing page, so that I can start
+    without hunting for it.
+68. As a signed-in reader, I want to skip the landing page and go straight to my library, with
+    the upload action at the top, so that I am not shown a sales page for something I already use.
+69. As a visitor, I want the landing page to say that Redline is not legal advice and makes no
+    claim about the law where I live, so that I know the limit before I sign up.
+
 ## Implementation Decisions
 
 ### Stack and boundaries (settled in CLAUDE.md)
@@ -289,8 +307,28 @@ can check every line of it against their own copy.
 - The result page carries two fixed statements: "Redline shows only what it can prove. A
   receipt means no red line matched, not that the document is safe," and a plain not-legal-advice
   line that also says Redline makes no claim about the law where the reader lives.
-- Statements in flags describe what the clause does to the reader's party. They never use
-  "unusual," "standard," "normal," "might," "may be," or "could possibly."
+- Statements in flags describe what the clause does to the reader's party.
+- No copy anywhere uses a word on the banned-word list in PRODUCT.md (Brand Commitments). That
+  list is the only one; this spec and the tickets do not keep their own. The fixed receipt
+  statement above is the one exception, because it uses "safe" to deny it.
+
+### Landing page
+
+- Served at the root URL to visitors. A signed-in reader at the root URL is sent to the library,
+  which carries the upload action and whose empty state prompts a first upload. Until the
+  library exists, signed-in readers are sent to a placeholder page; the library ticket switches
+  the redirect over. The page links to the sign-up and sign-in flow from story 52.
+- Content is limited to what PRD section 3 and PRODUCT.md support: what Redline does, the four
+  accepted document types, the refusals (scanned documents, terms of service), the
+  source-sentence guarantee, and the not-legal-advice line from story 55. No testimonials,
+  customer or user counts, accuracy figures, or pricing, because none exist. No accuracy claim
+  until the PRD section 4 tests have been run. No pricing test (CONTEXT.md D11).
+- Page views are counted with Vercel's built-in, cookieless analytics, on the landing page only.
+  No other analytics, tracking, or cookie banner. The owner approved Vercel's analytics package
+  for Next.js (`@vercel/analytics`) by name on 2026-11-19.
+- Its copy follows the banned-word list in PRODUCT.md (Brand Commitments) and goes through the
+  humanizer skill before it is committed (CLAUDE.md, Copy).
+- Works at phone width and on a laptop, and meets WCAG 2.2 AA (PRODUCT.md).
 
 ## Testing Decisions
 
@@ -319,6 +357,9 @@ can check every line of it against their own copy.
     flags.
 - **Intake:** a text-layer PDF yields text; a scanned PDF fixture yields the refusal; a docx
   yields text; an unsupported format yields the format refusal; the normalisation is idempotent.
+- **Landing page:** a visitor's request to the root URL gets the landing page with working
+  sign-up and sign-in links; a signed-in request is sent to the library (or the placeholder
+  before the library exists). The rendered copy contains none of the banned words.
 - **Fixtures:** synthetic contract excerpts written for the tests, one per default red line per
   tier (fifteen), plus a benign excerpt that matches nothing. No real contracts in the repo.
 - **What the automated tests do not cover:** the quality of the real model's matches. That is the
@@ -345,7 +386,8 @@ can check every line of it against their own copy.
 
 - **Dependencies need approval before install** (CLAUDE.md). The likely list: Next.js and React;
   the Supabase client and its Next.js helpers; a browser PDF text extractor; a browser docx text
-  extractor; a schema validator for the model's structured output; a test runner. Each should be
+  extractor; a schema validator for the model's structured output; a test runner; Vercel's
+  analytics package for the landing page. Each should be
   proposed to the owner by name with the reason before anything is added.
 - **Model choice** through OpenRouter is open. Record the proposed default and the alternatives
   in QUESTIONS.md rather than deciding silently.

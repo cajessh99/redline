@@ -10,6 +10,6 @@
 - [ ] An addressing sentence that passes verification is shown verbatim
 - [ ] An addressing sentence that fails verification after one regeneration becomes "the document does not mention this", and the unverified sentence is never shown
 - [ ] A document with no matches shows a full receipt, not an empty page
-- [ ] The words "safe", "clean", and "no issues" never appear in receipt copy
+- [ ] Receipt copy uses no word on the banned-word list in PRODUCT.md (Brand Commitments), apart from the fixed receipt statement
 - [ ] Receipt lines are stored with the analysis
 - [ ] Tested with the fake model client, including a failed addressing sentence

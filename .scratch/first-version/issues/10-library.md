@@ -12,3 +12,5 @@
 - [ ] Deleting a document removes its text, analyses, and questions
 - [ ] Rerun applies the reader's current enabled red lines and stores a new analysis with its own snapshot
 - [ ] A reader cannot see or reach another reader's documents (row-level security, tested)
+- [ ] The library is the signed-in home: a signed-in reader at the root URL lands here, with the upload action at the top, replacing ticket 13's placeholder redirect (spec story 68)
+- [ ] An empty library prompts a first upload, and its copy has been run through the humanizer skill

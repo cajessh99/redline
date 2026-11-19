@@ -1,6 +1,7 @@
 # Redline: product brief
 
-Date: 2026-11-13. Owner: Jessica Hill. Status: first version, decisions settled in `CONTEXT.md`.
+Date: 2026-11-13, updated 2026-11-19 (landing page added to Section 3). Owner: Jessica Hill.
+Status: first version, decisions settled in `CONTEXT.md`.
 Vocabulary in `GLOSSARY.md`. Technical constraints in `CLAUDE.md`. Research in `research/`.
 
 Redline reads a contract the reader has not signed yet and shows them the clauses that match
@@ -114,6 +115,14 @@ Nothing beyond this list is in the first version.
    statement "the document does not mention this." A receipt never says the document is safe.
 8. **Keeps a library of past documents.** The reader's stored texts and their results, listed,
    reopenable, deletable. One reader's library is theirs alone.
+9. **Has a landing page that says what Redline does and leads to sign-up.** Added 2026-11-19 by
+   the owner. A signed-out visitor sees what Redline does, the accepted document types, what it
+   does not take (scanned documents, terms of service), that every flag shows the exact
+   sentence it came from, and that Redline is not legal advice. A signed-in reader goes straight
+   to the library, which carries the upload action. The page claims nothing this brief does not
+   support: no testimonials, user counts, accuracy figures, or pricing, and no accuracy claim
+   until the Section 4 tests have been run. Page views are counted with Vercel's built-in,
+   cookieless analytics only (`CONTEXT.md` D11).
 
 ## 4. What good looks like
 

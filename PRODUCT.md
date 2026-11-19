@@ -64,7 +64,9 @@ Capabilities (the complete scope, per CLAUDE.md and PRD.md section 3):
 - An editable list of red lines: five on by default, six offered and switched off.
 - A receipt, one line per red line, when few or no flags match.
 - A saved library of past documents, private to each reader.
-- A landing page (confirmed by the owner 2026-11-19).
+- A landing page (confirmed by the owner 2026-11-19; CONTEXT.md D11), with a not-legal-advice
+  line and Vercel's built-in, cookieless page-view analytics. Signed-in readers land on the
+  library instead.
 
 Constraints:
 - The file is parsed in the browser; only extracted text is stored.
@@ -77,8 +79,12 @@ Constraints:
 ## Brand Commitments
 
 - Name: Redline. No logo or other brand assets exist yet.
-- Voice: plain, declarative sentences. No hedging ("might", "may"). Never reassuring: no "safe",
-  "standard", "clean", "no issues", "unusual". Nothing is said that the document does not say.
+- Voice: plain, declarative sentences. Nothing is said that the document does not say.
+- Banned words, the one list for all copy (landing page, interface, flags, receipts, answers,
+  errors, empty states): "safe", "standard", "normal", "unusual", "clean", "no issues", "might",
+  "may", "could possibly". The spec, tickets, and tests point here rather than keeping their own
+  copies. The only exception is the result page's fixed statement "A receipt means no red line
+  matched, not that the document is safe", which uses "safe" to deny it.
   A flag says what the clause does, not how to feel about it.
 - All copy the reader sees (landing page, UI labels, error messages, empty states) goes through
   the humanizer skill before it is committed. Copy that reads as model-written is a defect

@@ -15,6 +15,15 @@ Someone Redline analyses documents for without tailoring its defaults to them: a
 an offer letter or non-compete, a renter with a lease, a small-business owner with a vendor or
 supplier contract. They get the same analysis as the primary reader.
 
+## Visitor
+Someone at Redline who is not signed in. A visitor sees only the landing page and becomes a
+reader by signing up.
+Avoid: "reader" for someone not signed in; "lead" or "prospect".
+
+## Landing page
+The public page at the root URL, shown to visitors. It says what Redline does and leads to
+sign-up. A signed-in reader never sees it.
+
 ## Client contract
 The document the primary reader uploads: an agreement a client has asked a freelancer to sign.
 One of the accepted document types.

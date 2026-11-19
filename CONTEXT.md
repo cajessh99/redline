@@ -127,6 +127,20 @@ answer is from that party's side.
 Rejected: inferring the party from the text; assuming the reader is always the weaker party.
 Given up: one click of friction on every upload.
 
+### D11. Redline has a landing page that leads to sign-up (2026-11-19)
+Added by the owner after the brief was written, for two reasons. A visitor needs to know what
+Redline does and does not take before creating an account: without that, someone holding a
+scanned document or terms of service signs up for nothing. And T9 needs five readers matching the
+primary reader, who need somewhere public to be sent.
+The page says what Redline does, the accepted document types, what it refuses, that every flag
+shows its source sentence, and that Redline is not legal advice. It claims nothing the brief does
+not support: no testimonials, counts, accuracy figures, or pricing. A signed-in reader skips it
+and lands on the library, which carries the upload action. Page views are measured with Vercel's
+built-in, cookieless analytics only, on the landing page.
+Rejected: a pricing test on the page (research/summary.md suggests one; payments are out of
+scope); third-party analytics and cookies.
+Given up: the first version having no public surface at all, and a small amount of scope.
+
 ## Round 1: who this is for (settled: D1, D2, D3)
 
 Segments the research surfaced:
