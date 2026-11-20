@@ -83,7 +83,7 @@ export const RUN_ERROR_MESSAGES: Record<RunErrorCode, string> = {
   text_too_long: `That's longer than Redline reads in one go (${MAX_DOCUMENT_CHARS.toLocaleString("en-US")} characters).`,
   not_normalised:
     "The text Redline received doesn't match the text you were shown, so it hasn't checked it. Reload the page and try again.",
-  missing_party: "Type which party you are before Redline checks the contract.",
+  missing_party: "Pick or type your party before Redline checks the contract.",
   party_too_long: `Keep your party to ${MAX_PARTY_CHARS} characters or fewer.`,
   model_unavailable: "Redline can't check contracts right now. Nothing was saved. Try again later.",
   analysis_failed:
@@ -92,6 +92,21 @@ export const RUN_ERROR_MESSAGES: Record<RunErrorCode, string> = {
 
 function refuse(status: number, code: RunErrorCode): RunOutcome {
   return { ok: false, status, error: { code, message: RUN_ERROR_MESSAGES[code] } };
+}
+
+/**
+ * The reader's party as they picked or typed it, trimmed. Nothing else is accepted: an empty or
+ * missing party is refused, never filled in (D10).
+ */
+export function checkParty(
+  party: unknown,
+): { ok: true; party: string } | { ok: false; code: "missing_party" | "party_too_long" | "bad_request" } {
+  if (party === undefined || party === null) return { ok: false, code: "missing_party" };
+  if (typeof party !== "string") return { ok: false, code: "bad_request" };
+  const trimmed = party.trim();
+  if (trimmed === "") return { ok: false, code: "missing_party" };
+  if (trimmed.length > MAX_PARTY_CHARS) return { ok: false, code: "party_too_long" };
+  return { ok: true, party: trimmed };
 }
 
 /** The document's title for now: its first line, cut to MAX_TITLE_CHARS. */
@@ -123,9 +138,9 @@ export async function runAnalysis(body: unknown, deps: RunDeps): Promise<RunOutc
   // would be stored is not exactly what the reader was shown, so refuse rather than fix it up.
   if (normaliseText(text) !== text) return refuse(400, "not_normalised");
 
-  const readerParty = party.trim();
-  if (readerParty === "") return refuse(400, "missing_party");
-  if (readerParty.length > MAX_PARTY_CHARS) return refuse(400, "party_too_long");
+  const checkedParty = checkParty(party);
+  if (!checkedParty.ok) return refuse(400, checkedParty.code);
+  const readerParty = checkedParty.party;
 
   if (!deps.model) return refuse(503, "model_unavailable");
 

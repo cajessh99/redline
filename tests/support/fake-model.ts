@@ -196,3 +196,45 @@ export class FakeModel implements ModelClient {
 export function fakeModel(...payloads: unknown[]): FakeModel {
   return new FakeModel(payloads.map((json) => ({ json })));
 }
+
+/**
+ * A fake tuned per party (T5). It answers from the structured party on the request
+ * (`request.metadata.party`), never from prompt wording, and fails a call for a party it has no
+ * answer for. Records every request.
+ */
+export class PartyTunedModel implements ModelClient {
+  readonly calls: ModelRequest[] = [];
+  private readonly byParty: Readonly<Record<string, unknown>>;
+
+  constructor(byParty: Readonly<Record<string, unknown>>) {
+    this.byParty = byParty;
+  }
+
+  async completeJson(request: ModelRequest): Promise<unknown> {
+    this.calls.push(request);
+    const party = request.metadata?.party;
+    if (party === undefined || !Object.hasOwn(this.byParty, party)) {
+      throw new Error(`PartyTunedModel: no answer for party ${JSON.stringify(party)}`);
+    }
+    return structuredClone(this.byParty[party]);
+  }
+}
+
+/**
+ * The payload for the side a one-sided contract favours: no matches at all, and for each red line
+ * the sentence that deals with its subject (the first planted sentence for that red line, or the
+ * sidecar's receipt sentence), so the result is a full receipt.
+ */
+export function favouredSidePayload(
+  sidecar: Sidecar,
+  redLineIds: readonly string[] = DEFAULT_RED_LINE_IDS,
+) {
+  const addressing = redLineIds.map((redLineId) => ({
+    redLineId,
+    addressingSentence:
+      sidecar.flags.find((flag) => flag.redLineId === redLineId)?.sentence ??
+      sidecar.receipt.find((line) => line.redLineId === redLineId)?.addressingSentence ??
+      null,
+  }));
+  return analysisPayload(redLineIds, [], addressing);
+}

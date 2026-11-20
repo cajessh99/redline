@@ -2,8 +2,9 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { notFound, redirect } from "next/navigation";
 import { parseCheckedRedLines, parseStoredFlags, parseStoredReceipt } from "../../../lib/analysis/stored.ts";
+import { findPartyCandidates } from "../../../lib/intake/parties.ts";
 import { createSupabaseServerClient } from "../../../lib/supabase/server.ts";
-import { ResultView } from "../../analysis/result-view.tsx";
+import { DocumentResult } from "./document-result.tsx";
 
 export const metadata = { title: "Saved result · Redline" };
 
@@ -13,7 +14,7 @@ type DocumentRow = { id: string; title: string; stored_text: string; party: stri
 type AnalysisRow = { flags: unknown; receipt: unknown; red_lines_snapshot: unknown };
 
 /**
- * A stored document and its latest analysis, read under the reader's own session, so row-level
+ * A stored document and its latest analysis, with "Change my party" (ticket 07), read under the reader's own session, so row-level
  * security decides what is visible. Anything not visible to this reader is a 404.
  */
 export default async function DocumentPage({ params }: { params: Promise<{ id: string }> }) {
@@ -52,18 +53,16 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         </Link>
       </header>
       <main className="check">
-        <div className="check-intro">
-          <h1 className="check-title">{document.title}</h1>
-        </div>
-        <div className="check-sheet">
-          <ResultView
-            storedText={document.stored_text}
-            party={document.party}
-            flags={parseStoredFlags(analysis.flags, document.stored_text)}
-            receipt={parseStoredReceipt(analysis.receipt, document.stored_text)}
-            checkedRedLines={parseCheckedRedLines(analysis.red_lines_snapshot)}
-          />
-        </div>
+        <DocumentResult
+          documentId={document.id}
+          title={document.title}
+          storedText={document.stored_text}
+          candidates={findPartyCandidates(document.stored_text)}
+          party={document.party}
+          flags={parseStoredFlags(analysis.flags, document.stored_text)}
+          receipt={parseStoredReceipt(analysis.receipt, document.stored_text)}
+          checkedRedLines={parseCheckedRedLines(analysis.red_lines_snapshot)}
+        />
         <p className="check-again">
           <Link href="/check" className="action">
             Check another contract

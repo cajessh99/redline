@@ -538,6 +538,7 @@ export async function analyse(input: AnalysisInput, deps: AnalysisDeps): Promise
       user: userPrompt(input, redLines),
       schemaName: "redline_analysis",
       jsonSchema: analysisSchema(checkedRedLineIds),
+      metadata: { party: input.party },
     },
     parseOutput,
   );
@@ -605,6 +606,7 @@ export async function analyse(input: AnalysisInput, deps: AnalysisDeps): Promise
         ),
         schemaName: "redline_regeneration",
         jsonSchema: regenerationSchema(failureIds, addressingIds),
+        metadata: { party: input.party },
       },
       (raw) => parseRegeneration(raw, failureIds.length > 0, addressingIds.length > 0),
     );

@@ -64,6 +64,19 @@ describe("OpenRouterClient", () => {
     expect(String(captured[0].init.body)).not.toContain(key);
   });
 
+  it("does not send the request's metadata to the provider", async () => {
+    const captured: Captured[] = [];
+    const client = new OpenRouterClient({
+      apiKey: key,
+      model: "m",
+      fetch: fetchReturning(200, completion('{"redLines":[]}'), captured),
+    });
+    await client.completeJson({ ...request, metadata: { party: "Contractor" } });
+    const body = JSON.parse(String(captured[0].init.body));
+    expect(Object.keys(body).sort()).toEqual(["messages", "model", "provider", "reasoning", "response_format"].sort());
+    expect(String(captured[0].init.body)).not.toContain("metadata");
+  });
+
   it("throws a request error on a 500, without the key in the message", async () => {
     const client = new OpenRouterClient({
       apiKey: key,

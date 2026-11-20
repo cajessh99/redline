@@ -11,6 +11,11 @@ export type ModelRequest = {
   schemaName: string;
   /** Strict JSON Schema the response must follow. */
   jsonSchema: JsonSchema;
+  /**
+   * Structured facts about the request, for tests and logs. Never sent to the provider: real
+   * clients ignore it. It lets a fake model answer per party without reading prompt wording.
+   */
+  metadata?: { party: string };
 };
 
 export interface ModelClient {
