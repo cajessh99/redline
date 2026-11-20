@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { seedRedLinesAfterSignIn } from "../../lib/server/red-line-store.ts";
 import { createSupabaseServerClient } from "../../lib/supabase/server.ts";
 import { NOT_OPEN, authErrorMessage } from "./messages.ts";
 
@@ -39,6 +40,7 @@ export async function signIn(_prev: SignInState, formData: FormData): Promise<Si
       email,
     };
   }
+  await seedRedLinesAfterSignIn(supabase);
   redirect("/library");
 }
 
@@ -65,7 +67,10 @@ export async function signUp(_prev: SignUpState, formData: FormData): Promise<Si
     };
   }
   // With email confirmation off, Supabase signs the reader in straight away.
-  if (data.session) redirect("/library");
+  if (data.session) {
+    await seedRedLinesAfterSignIn(supabase);
+    redirect("/library");
+  }
   return { status: "check-email", email };
 }
 

@@ -1333,3 +1333,226 @@ h4.receipt-title {
     padding: 0.9rem 0.85rem 1rem;
   }
 }
+
+/* Masthead with more than one link */
+
+.masthead-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem 1.25rem;
+}
+
+/* The result's "Checked against your N red lines." line */
+
+.result-checked {
+  margin: 1.6rem 0 0;
+  font-weight: 600;
+}
+
+.result-checked + h3.receipt-heading {
+  margin-top: 0.6rem;
+}
+
+/* Red lines page: ruled rows on one sheet. No tier ink here (Ink Is Earned): a tier is a word. */
+
+.red-line-count {
+  margin: 0 0 1rem;
+  max-width: 40rem;
+  font-weight: 600;
+}
+
+.red-line-group + .red-line-group {
+  margin-top: 2.4rem;
+}
+
+.red-line-sheet h2 {
+  font-size: clamp(1.4rem, 2vw, 1.75rem);
+  margin-bottom: 0.3rem;
+}
+
+.red-line-note {
+  margin: 0 0 0.6rem;
+  color: var(--toner-soft);
+}
+
+.red-line-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.red-line-item {
+  padding: 1rem 0 1.05rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.red-line-item:last-child {
+  border-bottom: 0;
+}
+
+.red-line-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+
+h3.red-line-title {
+  margin: 0;
+  padding-top: 0.55rem;
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+.switch {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  min-width: 96px;
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  color: var(--toner);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.switch:disabled {
+  cursor: progress;
+  color: var(--toner-soft);
+}
+
+.switch-track {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border: 2px solid var(--toner);
+  border-radius: 2px;
+  background: var(--paper-bright);
+  transition: background-color 0.2s var(--ease-out);
+}
+
+.switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: var(--toner);
+  transition: transform 0.2s var(--ease-out), background-color 0.2s var(--ease-out);
+}
+
+.switch[aria-checked="true"] .switch-track {
+  background: var(--toner);
+}
+
+.switch[aria-checked="true"] .switch-thumb {
+  background: var(--paper-bright);
+  transform: translateX(20px);
+}
+
+.red-line-warning {
+  margin: 0.8rem 0 0;
+  padding: 0.1rem 0 0.1rem 0.9rem;
+  border-left: 3px solid var(--toner);
+  max-width: 40rem;
+}
+
+.red-line-warning p {
+  margin: 0 0 0.8rem;
+  font-weight: 600;
+}
+
+.red-line-warning-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+}
+
+.red-line-details {
+  margin-top: 0.4rem;
+  max-width: 44rem;
+}
+
+.red-line-details summary {
+  display: inline-block;
+  min-height: 24px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  text-decoration: underline;
+  text-underline-offset: 0.22em;
+  text-decoration-thickness: 1.5px;
+  cursor: pointer;
+}
+
+.red-line-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.red-line-details summary::before {
+  content: "+ ";
+  display: inline-block;
+  width: 1.1em;
+  text-decoration: none;
+}
+
+.red-line-details[open] summary::before {
+  content: "\2212 ";
+}
+
+.red-line-label {
+  margin: 0.8rem 0 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--toner-soft);
+}
+
+.red-line-text {
+  margin: 0;
+}
+
+.red-line-tiers {
+  margin: 0.6rem 0 0;
+}
+
+.red-line-tier {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: 4px 16px;
+  padding: 0.5rem 0;
+}
+
+.red-line-tier dt {
+  font-weight: 700;
+}
+
+.red-line-tier dd {
+  margin: 0;
+}
+
+@media (max-width: 560px) {
+  .red-line-sheet {
+    padding: 18px 16px;
+  }
+
+  .red-line-tier {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .switch-track,
+  .switch-thumb {
+    transition: none;
+  }
+}

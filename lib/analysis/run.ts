@@ -8,6 +8,8 @@
 import { normaliseText } from "../intake/normalise.ts";
 import { MAX_DOCUMENT_CHARS } from "../intake/text-file.ts";
 import type { RedLine } from "../red-lines/defaults.ts";
+import { NO_RED_LINES_MESSAGE } from "../red-lines/messages.ts";
+import { toRedLine } from "../red-lines/store.ts";
 import { analyse, type AnalysisDiagnostics, type Flag, type ReceiptLine } from "./analyse.ts";
 import type { ModelClient } from "./model.ts";
 
@@ -48,6 +50,8 @@ export type RunErrorCode =
   | "not_normalised"
   | "missing_party"
   | "party_too_long"
+  | "no_red_lines"
+  | "red_lines_unavailable"
   | "model_unavailable"
   | "analysis_failed";
 
@@ -70,11 +74,30 @@ export type RunDeps = {
   model: ModelClient | null;
   /** Null when nobody is signed in, or accounts are not configured. Then nothing is stored. */
   store: AnalysisStore | null;
-  /** The enabled red lines for this run. */
+  /**
+   * The enabled red lines for this run: the reader's own when signed in, the five defaults held in
+   * code otherwise. An empty list is refused before any model call.
+   */
   redLines: RedLine[];
   /** Where a failure is reported for the operator. Never receives document text or the key. */
   log?: (message: string) => void;
 };
+
+/**
+ * The snapshot stored with an analysis: every enabled red line, once each, in list order, with its
+ * id, kind, title, description and tiers as worded at the time. The result page reads red line
+ * titles from here, so later edits never change an old result.
+ */
+export function redLinesSnapshot(redLines: readonly RedLine[]): RedLine[] {
+  const seen = new Set<string>();
+  const snapshot: RedLine[] = [];
+  for (const redLine of redLines) {
+    if (seen.has(redLine.id)) continue;
+    seen.add(redLine.id);
+    snapshot.push(toRedLine(redLine));
+  }
+  return snapshot;
+}
 
 /** What the reader is told when a request is refused or the analysis fails. */
 export const RUN_ERROR_MESSAGES: Record<RunErrorCode, string> = {
@@ -85,6 +108,9 @@ export const RUN_ERROR_MESSAGES: Record<RunErrorCode, string> = {
     "The text Redline received doesn't match the text you were shown, so it hasn't checked it. Reload the page and try again.",
   missing_party: "Pick or type your party before Redline checks the contract.",
   party_too_long: `Keep your party to ${MAX_PARTY_CHARS} characters or fewer.`,
+  no_red_lines: NO_RED_LINES_MESSAGE,
+  red_lines_unavailable:
+    "Redline couldn't load your red lines, so it hasn't checked this contract. Nothing was saved. Try again in a minute.",
   model_unavailable: "Redline can't check contracts right now. Nothing was saved. Try again later.",
   analysis_failed:
     "Redline couldn't finish reading this contract. It shows a result only when the whole check finishes. Nothing was saved. Try again in a minute.",
@@ -142,16 +168,19 @@ export async function runAnalysis(body: unknown, deps: RunDeps): Promise<RunOutc
   if (!checkedParty.ok) return refuse(400, checkedParty.code);
   const readerParty = checkedParty.party;
 
+  // With nothing switched on there is nothing to check. analyse() would return an empty result
+  // without calling the model, which would read as a clean receipt, so refuse here instead.
+  const snapshot = redLinesSnapshot(deps.redLines);
+  if (snapshot.length === 0) return refuse(422, "no_red_lines");
+
   if (!deps.model) return refuse(503, "model_unavailable");
 
-  const result = await analyse({ text, party: readerParty, redLines: deps.redLines }, { model: deps.model });
+  const result = await analyse({ text, party: readerParty, redLines: snapshot }, { model: deps.model });
   if (!result.ok) {
     deps.log?.(`analysis failed (${result.error.kind}): ${result.error.message}`);
     return refuse(502, "analysis_failed");
   }
 
-  const checked = deps.redLines.filter((redLine) => result.checkedRedLineIds.includes(redLine.id));
-  const uniqueChecked = checked.filter((redLine, i) => checked.findIndex((r) => r.id === redLine.id) === i);
   const title = titleFromText(text);
 
   let saved: SavedState = { kind: "not_kept" };
@@ -161,7 +190,7 @@ export async function runAnalysis(body: unknown, deps: RunDeps): Promise<RunOutc
         title,
         storedText: text,
         party: readerParty,
-        redLinesSnapshot: uniqueChecked,
+        redLinesSnapshot: snapshot,
         flags: result.flags,
         receipt: result.receipt,
       });
@@ -179,7 +208,7 @@ export async function runAnalysis(body: unknown, deps: RunDeps): Promise<RunOutc
     party: readerParty,
     flags: result.flags,
     receipt: result.receipt,
-    checkedRedLines: uniqueChecked.map(({ id, title: redLineTitle }) => ({ id, title: redLineTitle })),
+    checkedRedLines: snapshot.map(({ id, title: redLineTitle }) => ({ id, title: redLineTitle })),
     saved,
     diagnostics: result.diagnostics,
   };

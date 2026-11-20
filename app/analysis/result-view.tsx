@@ -43,10 +43,13 @@ function flagCount(n: number): string {
   return n === 1 ? "1 flag" : `${n} flags`;
 }
 
+/** Says how many red lines were checked (story 31). The flags and receipt rows below name each one. */
+export function checkedLine(n: number): string {
+  return n === 1 ? "Checked against your one red line." : `Checked against your ${n} red lines.`;
+}
+
 function noneMatched(n: number): string {
-  return n === 1
-    ? "Your one red line didn't match a sentence in this document."
-    : `None of your ${n} red lines matched a sentence in this document.`;
+  return n === 1 ? "It didn't match a sentence in this document." : "None of them matched a sentence in this document.";
 }
 
 /**
@@ -87,6 +90,10 @@ export function ResultView({ storedText, party, flags, receipt, checkedRedLines 
   );
   const flagged = new Set(shown.map((flag) => flag.redLineId));
   const rows = receiptRows(storedText, flagged, receipt, checkedRedLines);
+  // Titles come from the red lines as they were when this check ran (the stored snapshot), never
+  // from the reader's current list, so editing a red line later doesn't change an old result.
+  const titleOf = (flag: Flag) => checkedRedLines.find((r) => r.id === flag.redLineId)?.title ?? flag.redLineTitle;
+  const checkedCount = checkedRedLines.length > 0 ? checkedRedLines.length : new Set([...flagged, ...rows.map((r) => r.id)]).size;
 
   return (
     <section className="result-view" aria-labelledby="result-heading">
@@ -106,7 +113,7 @@ export function ResultView({ storedText, party, flags, receipt, checkedRedLines 
               <li key={key} className="flag" data-tier={flag.tier.toLowerCase()}>
                 <div className="slip-head">
                   <span className="stamp">{flag.tier}</span>
-                  <h3 className="flag-line">{flag.redLineTitle}</h3>
+                  <h3 className="flag-line">{titleOf(flag)}</h3>
                 </div>
                 <p className="flag-statement">{flag.statement}</p>
                 <p className="slip-label">Source sentence</p>
@@ -117,13 +124,18 @@ export function ResultView({ storedText, party, flags, receipt, checkedRedLines 
                 <p className="flag-counter" id={counterId}>
                   {flag.counterOffer}
                 </p>
-                <CopyButton text={flag.counterOffer} redLineTitle={flag.redLineTitle} targetId={counterId} />
+                <CopyButton text={flag.counterOffer} redLineTitle={titleOf(flag)} targetId={counterId} />
               </li>
             );
           })}
         </ol>
-      ) : rows.length > 0 ? (
-        <p className="result-empty">{noneMatched(rows.length)}</p>
+      ) : null}
+
+      {checkedCount > 0 ? (
+        <p className={shown.length === 0 ? "result-empty" : "result-checked"}>
+          {checkedLine(checkedCount)}
+          {shown.length === 0 && rows.length > 0 ? ` ${noneMatched(checkedCount)}` : null}
+        </p>
       ) : null}
 
       {rows.length > 0 ? (

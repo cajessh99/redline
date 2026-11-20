@@ -1,6 +1,7 @@
 import { runAnalysis, RUN_ERROR_MESSAGES } from "../../../lib/analysis/run.ts";
-import { defaultEnabledRedLines } from "../../../lib/red-lines/defaults.ts";
+import { rulebookFor } from "../../../lib/analysis/rulebook.ts";
 import { supabaseAnalysisStore } from "../../../lib/server/analysis-store.ts";
+import { readerEnabledRedLines } from "../../../lib/server/red-line-store.ts";
 import { serverModelClient } from "../../../lib/server/model.ts";
 import { createSupabaseServerClient } from "../../../lib/supabase/server.ts";
 
@@ -9,8 +10,9 @@ export const maxDuration = 300;
 
 /**
  * POST { text, party }. The text is the normalised text the reader was shown; the file never
- * reaches the server. Signed in, the document and analysis are stored together; signed out, or
- * with accounts not configured, nothing is stored.
+ * reaches the server. Signed in, the reader's enabled red lines are the rulebook and the document
+ * and analysis are stored together; signed out, or with accounts not configured, the five default
+ * red lines held in code are used and nothing is stored (BUILD-REPORT.md B3).
  */
 export async function POST(request: Request): Promise<Response> {
   let body: unknown;
@@ -25,16 +27,27 @@ export async function POST(request: Request): Promise<Response> {
 
   const supabase = await createSupabaseServerClient();
   let store = null;
+  let loadReaderRedLines = null;
   if (supabase) {
     const { data, error } = await supabase.auth.getUser();
-    if (!error && data.user) store = supabaseAnalysisStore(supabase);
+    if (!error && data.user) {
+      store = supabaseAnalysisStore(supabase);
+      loadReaderRedLines = () => readerEnabledRedLines(supabase);
+    }
+  }
+  const rulebook = await rulebookFor(loadReaderRedLines);
+  if (!rulebook.ok) {
+    console.error(`[analyse] loading red lines failed: ${rulebook.error}`);
+    return Response.json(
+      { ok: false, error: { code: "red_lines_unavailable", message: RUN_ERROR_MESSAGES.red_lines_unavailable } },
+      { status: 500 },
+    );
   }
 
   const outcome = await runAnalysis(body, {
     model: serverModelClient(),
     store,
-    // Ticket 08 replaces these with the reader's stored, enabled red lines.
-    redLines: defaultEnabledRedLines(),
+    redLines: rulebook.redLines,
     log: (message) => console.error(`[analyse] ${message}`),
   });
 

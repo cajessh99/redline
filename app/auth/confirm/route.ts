@@ -1,5 +1,6 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
+import { seedRedLinesAfterSignIn } from "../../../lib/server/red-line-store.ts";
 import { createSupabaseServerClient } from "../../../lib/supabase/server.ts";
 
 // The link in the sign-up confirmation email lands here. It carries either a PKCE code or a
@@ -17,10 +18,16 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return to("/library");
+    if (!error) {
+      await seedRedLinesAfterSignIn(supabase);
+      return to("/library");
+    }
   } else if (tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
-    if (!error) return to("/library");
+    if (!error) {
+      await seedRedLinesAfterSignIn(supabase);
+      return to("/library");
+    }
   }
   return to("/sign-in?error=confirm");
 }

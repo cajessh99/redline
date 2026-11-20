@@ -174,7 +174,7 @@ describe("ResultView", () => {
     const html = render(flags, receipt, benign.text);
     const seen = readerText(html);
     expect(seen).toContain("No flags");
-    expect(seen).toContain("None of your 5 red lines matched a sentence in this document.");
+    expect(seen).toContain("Checked against your 5 red lines. None of them matched a sentence in this document.");
     const rows = receiptRows(html);
     expect(rows.map(([kind]) => kind)).toEqual(["addressed", "addressed", "addressed", "addressed", "addressed"]);
     rows.forEach(([, body], i) => {

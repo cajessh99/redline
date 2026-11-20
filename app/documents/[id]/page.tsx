@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { parseCheckedRedLines, parseStoredFlags, parseStoredReceipt } from "../../../lib/analysis/stored.ts";
 import { findPartyCandidates } from "../../../lib/intake/parties.ts";
 import { createSupabaseServerClient } from "../../../lib/supabase/server.ts";
+import { MastheadLinks, SIGNED_IN_LINKS } from "../../auth/masthead-links.tsx";
 import { DocumentResult } from "./document-result.tsx";
 
 export const metadata = { title: "Saved result · Redline" };
@@ -48,9 +49,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         <Link href="/" className="wordmark">
           Redline
         </Link>
-        <Link href="/library" className="quiet-link">
-          Library
-        </Link>
+        <MastheadLinks links={[SIGNED_IN_LINKS.library, SIGNED_IN_LINKS.redLines]} />
       </header>
       <main className="check">
         <DocumentResult

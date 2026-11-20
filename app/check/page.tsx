@@ -2,6 +2,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { supabaseConfig } from "../../lib/env.ts";
 import { currentReader } from "../../lib/supabase/server.ts";
+import { MastheadLinks, SIGNED_IN_LINKS } from "../auth/masthead-links.tsx";
 import { CheckFlow } from "./check-flow.tsx";
 
 export const metadata = { title: "Check a contract · Redline" };
@@ -18,9 +19,7 @@ export default async function CheckPage() {
           Redline
         </Link>
         {reader ? (
-          <Link href="/library" className="quiet-link">
-            Library
-          </Link>
+          <MastheadLinks links={[SIGNED_IN_LINKS.library, SIGNED_IN_LINKS.redLines]} />
         ) : (
           <Link href="/sign-in" className="quiet-link">
             Sign in

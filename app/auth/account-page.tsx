@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { MastheadLinks, type MastheadLink } from "./masthead-links.tsx";
 
 type Props = {
-  aside?: { href: string; label: string };
+  aside?: MastheadLink | readonly MastheadLink[];
   children: ReactNode;
 };
 
@@ -14,11 +15,7 @@ export function AccountPage({ aside, children }: Props) {
         <Link href="/" className="wordmark">
           Redline
         </Link>
-        {aside ? (
-          <Link href={aside.href} className="quiet-link">
-            {aside.label}
-          </Link>
-        ) : null}
+        {aside ? <MastheadLinks links={Array.isArray(aside) ? aside : [aside as MastheadLink]} /> : null}
       </header>
       <main className="account">
         <div className="account-sheet">{children}</div>

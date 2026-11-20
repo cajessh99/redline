@@ -86,3 +86,16 @@ Known gap: a scan that the scanner software already ran OCR on carries a hidden 
 OCR output, so it passes this check, and its text may be misread. Detecting that (an image
 covering the page under invisible text) is possible with pdf.js but was not built, because the
 ticket asked only for the character threshold. Decide whether to add it.
+
+## Q8. PRD tier wording on the red lines page uses "may" (2026-11-20)
+
+Ticket 08 shows each red line's tier descriptions word for word from PRD section 5, and several of
+them use "may" ("Severe when the reader may not work for other clients..."). PRODUCT.md bans "may"
+in all copy. Here it means "is not permitted to", not doubt, and it is the PRD's own wording, so
+the build shows it unchanged. Redline's own labels on that page use no banned word.
+
+- **A. Keep the PRD wording as is (recommended default).** It is a permission, not a hedge, and the
+  spec asks for it word for word.
+- **B. Reword those tier sentences in PRD section 5** (for example "is barred from working for
+  other clients"), then update `lib/red-lines/defaults.ts`. Readers whose lists were already
+  seeded keep the old wording until "restore defaults" (ticket 09).

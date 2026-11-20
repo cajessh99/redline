@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState, type FormEvent } from "react";
+import { CheckError } from "../analysis/check-error.tsx";
 import {
   chosenParty,
   NO_PARTY,
@@ -107,11 +108,7 @@ export function ChangeParty({ candidates, currentParty, rerun }: Props) {
       {open ? (
         <form id={panelId} className="check-form party-change-form" onSubmit={submit} noValidate>
           <p className="check-lead">{CHANGE_PARTY_COPY.lead(currentParty)}</p>
-          {error ? (
-            <p className="account-error" role="alert">
-              {error}
-            </p>
-          ) : null}
+          {error ? <CheckError message={error} /> : null}
           <PartyPicker
             idBase={`${idBase}-picker`}
             candidates={candidates}

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { currentReader } from "../../lib/supabase/server.ts";
 import { signOut } from "../auth/actions.ts";
 import { AccountPage } from "../auth/account-page.tsx";
+import { SIGNED_IN_LINKS } from "../auth/masthead-links.tsx";
 
 export const metadata = { title: "Library · Redline" };
 
@@ -13,7 +14,7 @@ export default async function LibraryPage() {
   if (!reader) redirect("/sign-in");
 
   return (
-    <AccountPage>
+    <AccountPage aside={[SIGNED_IN_LINKS.check, SIGNED_IN_LINKS.redLines]}>
       <h1 className="account-title">Library</h1>
       <p className="account-lead">
         Signed in as <strong>{reader.email}</strong>

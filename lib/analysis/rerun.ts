@@ -12,7 +12,7 @@
 import type { RedLine } from "../red-lines/defaults.ts";
 import { analyse, type AnalysisDiagnostics, type Flag, type ReceiptLine } from "./analyse.ts";
 import type { ModelClient } from "./model.ts";
-import { checkParty, RUN_ERROR_MESSAGES, type CheckedRedLine } from "./run.ts";
+import { checkParty, redLinesSnapshot, RUN_ERROR_MESSAGES, type CheckedRedLine } from "./run.ts";
 
 export type StoredDocument = { id: string; title: string; storedText: string; party: string };
 
@@ -39,6 +39,8 @@ export type RerunErrorCode =
   | "party_too_long"
   | "not_found"
   | "load_failed"
+  | "no_red_lines"
+  | "red_lines_unavailable"
   | "model_unavailable"
   | "analysis_failed"
   | "save_failed";
@@ -59,7 +61,7 @@ export type RerunOutcome =
 export type RerunDeps = {
   model: ModelClient | null;
   store: DocumentStore;
-  /** The enabled red lines for this run. */
+  /** The reader's enabled red lines. An empty list is refused before any model call. */
   redLines: RedLine[];
   /** Where a failure is reported for the operator. Never receives document text or the key. */
   log?: (message: string) => void;
@@ -71,6 +73,9 @@ export const RERUN_ERROR_MESSAGES: Record<RerunErrorCode, string> = {
   party_too_long: RUN_ERROR_MESSAGES.party_too_long,
   not_found: "Redline can't find this contract in your account.",
   load_failed: "Redline couldn't open this contract. Nothing has changed. Try again in a minute.",
+  no_red_lines: RUN_ERROR_MESSAGES.no_red_lines,
+  red_lines_unavailable:
+    "Redline couldn't load your red lines, so it hasn't checked the contract again. Your party and saved result haven't changed.",
   model_unavailable: "Redline can't check contracts right now. Your party and saved result haven't changed.",
   analysis_failed:
     "Redline couldn't finish the new check. Your party and saved result haven't changed. Try again in a minute.",
@@ -104,22 +109,22 @@ export async function rerunWithParty(documentId: string, body: unknown, deps: Re
   }
   if (!document) return refuse(404, "not_found");
 
+  const snapshot = redLinesSnapshot(deps.redLines);
+  if (snapshot.length === 0) return refuse(422, "no_red_lines");
+
   if (!deps.model) return refuse(503, "model_unavailable");
 
-  const result = await analyse({ text: document.storedText, party, redLines: deps.redLines }, { model: deps.model });
+  const result = await analyse({ text: document.storedText, party, redLines: snapshot }, { model: deps.model });
   if (!result.ok) {
     deps.log?.(`rerun failed (${result.error.kind}): ${result.error.message}`);
     return refuse(502, "analysis_failed");
   }
 
-  const checkedLines = deps.redLines.filter((redLine) => result.checkedRedLineIds.includes(redLine.id));
-  const uniqueChecked = checkedLines.filter((redLine, i) => checkedLines.findIndex((r) => r.id === redLine.id) === i);
-
   try {
     await deps.store.rerun({
       documentId: document.id,
       party,
-      redLinesSnapshot: uniqueChecked,
+      redLinesSnapshot: snapshot,
       flags: result.flags,
       receipt: result.receipt,
     });
@@ -134,7 +139,7 @@ export async function rerunWithParty(documentId: string, body: unknown, deps: Re
     party,
     flags: result.flags,
     receipt: result.receipt,
-    checkedRedLines: uniqueChecked.map(({ id, title }) => ({ id, title })),
+    checkedRedLines: snapshot.map(({ id, title }) => ({ id, title })),
     saved: { kind: "saved", documentId: document.id },
     diagnostics: result.diagnostics,
   };

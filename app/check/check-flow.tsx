@@ -6,6 +6,7 @@ import type { SavedState } from "../../lib/analysis/run.ts";
 import { findPartyCandidates } from "../../lib/intake/parties.ts";
 import { CONTRACT_FILE_ACCEPT } from "../../lib/intake/formats.ts";
 import { INTAKE_REFUSAL_MESSAGES, normalisePastedText } from "../../lib/intake/text-file.ts";
+import { CheckError } from "../analysis/check-error.tsx";
 import { ResultView } from "../analysis/result-view.tsx";
 import { ChangeParty } from "./change-party.tsx";
 import { chosenParty, NO_PARTY, partyFocusId, PartyPicker, partyProblem, type PartyChoice, type PartyProblem } from "./party-picker.tsx";
@@ -180,11 +181,7 @@ export function CheckFlow({ accountsOpen }: Props) {
           </section>
 
           <form className="check-form" onSubmit={analyse} noValidate>
-            {stage.error ? (
-              <p className="account-error" role="alert">
-                {stage.error}
-              </p>
-            ) : null}
+            {stage.error ? <CheckError message={stage.error} /> : null}
             <PartyPicker
               idBase={ids.party}
               candidates={stage.candidates}

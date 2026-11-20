@@ -4,12 +4,12 @@
 
 **Blocked by:** 03
 
-**Status:** ready-for-agent
+**Status:** done (2026-11-20; tested in PGlite only)
 
-- [ ] A new reader's list is seeded once with the 5 defaults on and the 6 offered off, worded exactly as in PRD section 5
-- [ ] Each red line has a title, a description of what matches, a description for each tier, an enabled switch, and a kind (default, offered, or reader-authored)
-- [ ] The reader can view each red line's tier descriptions
-- [ ] Switching a red line off warns the reader that the risk it covers will no longer be flagged
-- [ ] Red lines persist across sessions and are owned by the reader under row-level security
-- [ ] Analysis uses the reader's enabled red lines, replacing the set held in code from ticket 03
-- [ ] A snapshot of the enabled red lines is stored with each analysis, and the result page lists what was checked
+- [x] A new reader's list is seeded once with the 5 defaults on and the 6 offered off, worded exactly as in PRD section 5
+- [x] Each red line has a title, a description of what matches, a description for each tier, an enabled switch, and a kind (default, offered, or reader-authored)
+- [x] The reader can view each red line's tier descriptions
+- [x] Switching a red line off warns the reader that the risk it covers will no longer be flagged
+- [x] Red lines persist across sessions and are owned by the reader under row-level security
+- [x] Analysis uses the reader's enabled red lines, replacing the set held in code from ticket 03
+- [x] A snapshot of the enabled red lines is stored with each analysis, and the result page lists what was checked

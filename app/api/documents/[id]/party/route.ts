@@ -1,6 +1,7 @@
 import { rerunWithParty, RERUN_ERROR_MESSAGES } from "../../../../../lib/analysis/rerun.ts";
-import { defaultEnabledRedLines } from "../../../../../lib/red-lines/defaults.ts";
+import type { RedLine } from "../../../../../lib/red-lines/defaults.ts";
 import { supabaseDocumentStore } from "../../../../../lib/server/analysis-store.ts";
+import { readerEnabledRedLines } from "../../../../../lib/server/red-line-store.ts";
 import { serverModelClient } from "../../../../../lib/server/model.ts";
 import { createSupabaseServerClient } from "../../../../../lib/supabase/server.ts";
 
@@ -37,11 +38,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return refuse(400, "bad_request", RERUN_ERROR_MESSAGES.bad_request);
   }
 
+  let redLines: RedLine[];
+  try {
+    redLines = await readerEnabledRedLines(supabase);
+  } catch (loadError) {
+    console.error(`[rerun] loading red lines failed: ${loadError instanceof Error ? loadError.message : String(loadError)}`);
+    return refuse(500, "red_lines_unavailable", RERUN_ERROR_MESSAGES.red_lines_unavailable);
+  }
+
   const outcome = await rerunWithParty(id, body, {
     model: serverModelClient(),
     store: supabaseDocumentStore(supabase),
-    // Ticket 08 replaces these with the reader's stored, enabled red lines.
-    redLines: defaultEnabledRedLines(),
+    // The reader's enabled red lines now, not the ones the document was first checked against.
+    redLines,
     log: (message) => console.error(`[rerun] ${message}`),
   });
 
