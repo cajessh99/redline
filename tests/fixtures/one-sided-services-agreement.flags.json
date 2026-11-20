@@ -1,0 +1,69 @@
+{
+  "document": "one-sided-services-agreement.txt",
+  "parties": ["Client", "Contractor"],
+  "readerParty": "Contractor",
+  "flags": [
+    {
+      "redLineId": "ip-assignment",
+      "tier": "Severe",
+      "sentence": "Contractor hereby assigns to Client all right, title, and interest in all work product, code, tools, libraries, and other materials that Contractor has created at any time, whether before or during the term of this Agreement and whether or not created in performing the Services.",
+      "hurts": "Contractor",
+      "statement": "Contractor hands Client ownership of everything Contractor has ever made, including work, code, tools, and libraries created before this Agreement or outside the Services.",
+      "counterOffer": "Contractor assigns to Client all right, title, and interest in the Deliverables, and Contractor keeps all right, title, and interest in work product, code, tools, libraries, and other materials created before this Agreement or outside the Services."
+    },
+    {
+      "redLineId": "ip-assignment",
+      "tier": "Minor",
+      "sentence": "Contractor shall not display, describe, or reference any Deliverable in any portfolio, website, or promotional material.",
+      "hurts": "Contractor",
+      "statement": "Contractor cannot show or mention any Deliverable in a portfolio, website, or promotional material.",
+      "counterOffer": "Contractor is permitted to display, describe, and reference the Deliverables in Contractor's portfolio, website, and promotional material, provided that Contractor discloses no Confidential Information."
+    },
+    {
+      "redLineId": "uncapped-indemnity",
+      "tier": "Severe",
+      "sentence": "Contractor shall indemnify, defend, and hold harmless Client and its officers, employees, and agents from and against any and all claims, losses, damages, liabilities, costs, and expenses, including attorneys' fees, arising out of or relating to this Agreement or the Services, including claims caused by Client's own negligence, without any limitation as to amount.",
+      "hurts": "Contractor",
+      "statement": "Contractor pays every claim, loss, and legal fee connected to this Agreement or the Services, with no limit on the amount, including claims caused by Client's own negligence.",
+      "counterOffer": "Contractor shall indemnify Client against third-party claims to the extent caused by Contractor's negligence in performing the Services, excluding claims caused by Client's own negligence, and Contractor's total liability under this Section is limited to the fees paid to Contractor under this Agreement."
+    },
+    {
+      "redLineId": "non-compete",
+      "tier": "Severe",
+      "sentence": "During the term of this Agreement and for eighteen (18) months after it ends, Contractor shall not provide data analysis, data engineering, or reporting services to any person or business other than Client.",
+      "hurts": "Contractor",
+      "statement": "Contractor cannot do data analysis, data engineering, or reporting work for anyone except Client during this Agreement and for 18 months after it ends.",
+      "counterOffer": "Nothing in this Agreement restricts Contractor from providing data analysis, data engineering, or reporting services to other clients during or after the term of this Agreement."
+    },
+    {
+      "redLineId": "non-compete",
+      "tier": "Minor",
+      "sentence": "During the term of this Agreement and for twelve (12) months after it ends, Contractor shall not solicit any employee of Client to leave Client's employment.",
+      "hurts": "Contractor",
+      "statement": "Contractor cannot ask any Client employee to leave Client during this Agreement and for 12 months after it ends.",
+      "counterOffer": "During the term of this Agreement, Contractor shall not solicit any employee of Client with whom Contractor worked on the Services to leave Client's employment."
+    },
+    {
+      "redLineId": "discretionary-payment",
+      "tier": "Severe",
+      "sentence": "Client's obligation to pay any fee under this Agreement arises only upon Client's written acceptance of the related Deliverables, which Client may grant or withhold in its sole discretion.",
+      "hurts": "Contractor",
+      "statement": "Client owes Contractor nothing for delivered work until Client accepts it in writing, and Client alone decides whether to accept.",
+      "counterOffer": "Client's obligation to pay arises on delivery of the related Deliverables, which are accepted ten (10) days after delivery unless Client gives written notice within that period describing how they fail to conform to the Statement of Work."
+    },
+    {
+      "redLineId": "discretionary-payment",
+      "tier": "Moderate",
+      "sentence": "Client shall pay each approved invoice within seventy-five (75) days after Client receives it.",
+      "hurts": "Contractor",
+      "statement": "Client has 75 days after receiving an approved invoice to pay it.",
+      "counterOffer": "Client shall pay each invoice within thirty (30) days after Client receives it."
+    }
+  ],
+  "receipt": [
+    {
+      "redLineId": "termination-without-pay",
+      "addressingSentence": "Either Party may terminate this Agreement on fourteen (14) days' written notice, and on any termination Client shall pay Contractor for all Services performed up to the effective date of termination together with a termination fee of ten percent (10%) of the unbilled fees under the current Statement of Work."
+    }
+  ]
+}

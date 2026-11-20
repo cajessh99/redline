@@ -1,0 +1,28 @@
+{
+  "document": "benign-services-agreement.txt",
+  "parties": ["Client", "Contractor"],
+  "readerParty": "Contractor",
+  "flags": [],
+  "receipt": [
+    {
+      "redLineId": "ip-assignment",
+      "addressingSentence": "Contractor retains all right, title, and interest in its Pre-existing Materials, and nothing in this Agreement assigns any Pre-existing Materials to Client."
+    },
+    {
+      "redLineId": "uncapped-indemnity",
+      "addressingSentence": "Each Party's total liability to the other Party arising out of or relating to this Agreement is limited to the total fees paid and payable under this Agreement, except that this limit does not apply to Client's obligation to pay fees owed to Contractor."
+    },
+    {
+      "redLineId": "non-compete",
+      "addressingSentence": "Nothing in this Agreement restricts Contractor from providing services to other clients, including clients in the same industry as Client, during or after the term of this Agreement."
+    },
+    {
+      "redLineId": "discretionary-payment",
+      "addressingSentence": "Client shall pay each invoice within fourteen (14) days of receiving it, and payment is not conditioned on acceptance of any Deliverable, on Client's receipt of payment from any third party, or on any other event."
+    },
+    {
+      "redLineId": "termination-without-pay",
+      "addressingSentence": "On any termination, Client shall pay Contractor for all Services performed up to the effective date of termination, and if Client terminates for convenience, Client shall also pay a termination fee equal to ten percent (10%) of the fees remaining under the current Statement of Work."
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+INDEPENDENT CONTRACTOR SERVICES AGREEMENT
+
+This Independent Contractor Services Agreement (the "Agreement") is entered into as of March 2, 2026 (the "Effective Date") by and between Quillmont Analytics LLC, a limited liability company with its principal office at 410 Corvane Street, Suite 200, Ashbury ("Client"), and Rowan Tellisford, an individual residing at 77 Pellham Row, Marston ("Contractor"). Client and Contractor are each referred to in this Agreement as a "Party" and together as the "Parties".
+
+1. Definitions
+
+"Services" means the data analysis, dashboard design, and reporting work described in one or more statements of work signed by both Parties (each a "Statement of Work"). "Deliverables" means all reports, dashboards, queries, scripts, documentation, and other materials that Contractor prepares and delivers to Client in performing the Services. "Confidential Information" means any non-public business, technical, or financial information that Client discloses to Contractor in connection with this Agreement, whether disclosed in writing, orally, or by inspection. "Business Day" means any day other than a Saturday, a Sunday, or a public holiday in the place where Client has its principal office.
+
+2. Services
+
+Contractor shall perform the Services described in each Statement of Work in a professional and workmanlike manner. Each Statement of Work will describe the Services, the Deliverables, the schedule, and the fees for that engagement. If a Statement of Work conflicts with this Agreement, this Agreement controls unless the Statement of Work expressly states that it overrides a specific section of this Agreement. Contractor shall determine the method, details, and means of performing the Services, and shall supply its own equipment, software licenses, and workspace. Contractor shall keep Client reasonably informed of progress and shall respond to Client's written questions about the Services within two Business Days.
+
+3. Fees and Payment
+
+Client shall pay Contractor the fees set out in the applicable Statement of Work. Contractor shall submit invoices by email to the accounts payable address that Client designates for that purpose. Each invoice must identify the Statement of Work to which it relates and the Deliverables or hours it covers. Client's obligation to pay any fee under this Agreement arises only upon Client's written acceptance of the related Deliverables, which Client may grant or withhold in its sole discretion. Client shall pay each approved invoice within seventy-five (75) days after Client receives it. Contractor is responsible for its own expenses unless Client approves a specific expense in writing before Contractor incurs it. Contractor is solely responsible for all taxes on amounts paid to Contractor under this Agreement.
+
+4. Intellectual Property
+
+Contractor hereby assigns to Client all right, title, and interest in all work product, code, tools, libraries, and other materials that Contractor has created at any time, whether before or during the term of this Agreement and whether or not created in performing the Services. Contractor shall sign any further documents and take any further actions that Client reasonably requests to record or perfect the rights described in this Section. Contractor shall not display, describe, or reference any Deliverable in any portfolio, website, or promotional material. To the extent permitted by law, Contractor waives any moral rights in the Deliverables.
+
+5. Confidentiality
+
+Contractor shall hold Client's Confidential Information in confidence and shall use it only to perform the Services. Contractor shall not disclose Confidential Information to any third party without Client's prior written consent. These obligations do not apply to information that is or becomes public through no fault of Contractor, that Contractor already knew before Client disclosed it, that Contractor receives lawfully from a third party without a duty of confidence, or that Contractor develops independently without use of Client's Confidential Information. Contractor may disclose Confidential Information when required by law or court order, provided that Contractor gives Client prompt written notice where the law allows it. On Client's written request, Contractor shall return or destroy all Confidential Information in its possession. The obligations in this Section continue for three (3) years after this Agreement ends.
+
+6. Indemnification
+
+Contractor shall indemnify, defend, and hold harmless Client and its officers, employees, and agents from and against any and all claims, losses, damages, liabilities, costs, and expenses, including attorneys' fees, arising out of or relating to this Agreement or the Services, including claims caused by Client's own negligence, without any limitation as to amount. Client shall notify Contractor in writing of any claim for which it seeks indemnification within a reasonable time after Client learns of it.
+
+7. Restrictive Covenants
+
+During the term of this Agreement and for eighteen (18) months after it ends, Contractor shall not provide data analysis, data engineering, or reporting services to any person or business other than Client. During the term of this Agreement and for twelve (12) months after it ends, Contractor shall not solicit any employee of Client to leave Client's employment. Contractor acknowledges that it has read this Section and has had the opportunity to seek independent advice about it.
+
+8. Term and Termination
+
+This Agreement begins on the Effective Date and continues until the Services under every Statement of Work are complete, unless a Party terminates it earlier under this Section. Either Party may terminate this Agreement on fourteen (14) days' written notice, and on any termination Client shall pay Contractor for all Services performed up to the effective date of termination together with a termination fee of ten percent (10%) of the unbilled fees under the current Statement of Work. Either Party may terminate this Agreement immediately by written notice if the other Party commits a material breach and fails to cure it within ten (10) Business Days after receiving written notice describing the breach. Sections 4, 5, 6, 7, and 10 survive the end of this Agreement.
+
+9. Independent Contractor
+
+Contractor is an independent contractor and not an employee, partner, or agent of Client. Nothing in this Agreement creates an employment relationship, partnership, or joint venture between the Parties. Contractor is not entitled to any employee benefits from Client, and Client will not withhold any taxes from payments to Contractor. Contractor has no authority to bind Client to any contract or obligation.
+
+10. Governing Law and Venue
+
+This Agreement is governed by the laws of the state in which Client has its principal office, without regard to its conflict of laws rules. Any action arising out of or relating to this Agreement shall be brought in the state or federal courts located in the county of Client's principal office, and each Party consents to the jurisdiction of those courts.
+
+11. Notices
+
+All notices under this Agreement must be in writing and delivered by hand, by recognized courier, or by email with confirmation of transmission, to the address set out in the opening paragraph of this Agreement or to any other address that a Party designates by notice. A notice is effective on the day it is delivered, or if delivered after 5:00 p.m. local time or on a day that is not a Business Day, on the next Business Day.
+
+12. General
+
+This Agreement, together with each Statement of Work, is the entire agreement between the Parties about its subject matter and supersedes all prior proposals, understandings, and agreements, whether written or oral. This Agreement may be amended only by a written document signed by both Parties. Contractor may not assign or subcontract this Agreement or any of its obligations without Client's prior written consent. If any provision of this Agreement is held unenforceable, the remaining provisions remain in full force and effect. A Party's failure to enforce any provision is not a waiver of its right to enforce that provision later. This Agreement may be signed in counterparts, including by electronic signature, and all counterparts together form one agreement.
+
+IN WITNESS WHEREOF, the Parties have signed this Agreement as of the Effective Date.
+
+QUILLMONT ANALYTICS LLC
+
+By: ______________________
+
+Name: Delphine Aurrecoechea
+
+Title: Director of Operations
+
+CONTRACTOR
+
+______________________
+
+Rowan Tellisford
