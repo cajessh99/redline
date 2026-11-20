@@ -67,3 +67,22 @@ They are off by default, so this only matters once a reader switches one on.
 - **A. Write a one-sentence "matches when" line for each of the six (recommended default)**, in
   the style of the five defaults, and keep the PRD reasoning out of the prompt.
 - **B. Leave as is** and let readers edit the wording (ticket 09).
+
+## Q7. Scanned-PDF threshold (2026-11-20)
+
+`SCANNED_MIN_CHARS_PER_PAGE` in `lib/intake/pdf.ts` is **200**. Redline refuses a PDF as scanned
+when its text layer averages fewer than 200 non-whitespace characters per page, or has none at all.
+A typed contract page holds roughly 2,000 to 4,000 characters, and averaging across pages absorbs a
+short cover or signature page. A scan or phone photo has no text layer, or only what a scanner
+stamps on (page numbers, a footer, Bates numbers), and that stays far below 200.
+
+- **A. Keep 200 until real uploads show a false refusal (recommended default).**
+- **B. Lower it** (for example to 100) if a real typed PDF gets refused, such as a one-page letter
+  with a short body.
+- **C. Judge each page on its own** and refuse when most pages fall below the line. That catches a
+  scan with one typed cover page, which the average lets through.
+
+Known gap: a scan that the scanner software already ran OCR on carries a hidden text layer of
+OCR output, so it passes this check, and its text may be misread. Detecting that (an image
+covering the page under invisible text) is possible with pdf.js but was not built, because the
+ticket asked only for the character threshold. Decide whether to add it.

@@ -1,7 +1,7 @@
 // Browser-side intake for plain text (spec, "Document intake"; BUILD-REPORT.md B2). A chosen .txt
 // file is read in the browser and normalised there; pasted text goes through the same
 // normalisation. Only the normalised text is ever sent to the server. The file itself never leaves
-// the machine. Ticket 06 adds PDF and Word beside this.
+// the machine. lib/intake/file.ts routes .txt files here, beside the PDF and Word readers.
 //
 // Pure apart from reading the File, so tests run it in Node with Node's global File.
 
@@ -16,7 +16,8 @@ export type IntakeResult = { ok: true; text: string } | { ok: false; reason: Int
 
 /** What the reader is told for each refusal. */
 export const INTAKE_REFUSAL_MESSAGES: Record<IntakeRefusal, string> = {
-  unsupported_format: "Redline reads plain text (.txt) files for now. You can also paste the text below.",
+  unsupported_format:
+    "Redline reads PDF, Word (.docx) and plain text (.txt) files. Save the contract as one of those, or paste its text below.",
   empty: "There's no text in that. Choose another file or paste the contract.",
   not_text: "That file isn't plain text. Choose a .txt file or paste the contract.",
   too_long: `That's longer than Redline reads in one go (${MAX_DOCUMENT_CHARS.toLocaleString("en-US")} characters).`,

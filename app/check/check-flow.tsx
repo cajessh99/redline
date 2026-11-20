@@ -4,19 +4,20 @@ import Link from "next/link";
 import { useId, useRef, useState, type FormEvent } from "react";
 import type { SavedState } from "../../lib/analysis/run.ts";
 import { findPartyCandidates } from "../../lib/intake/parties.ts";
-import {
-  INTAKE_REFUSAL_MESSAGES,
-  normalisePastedText,
-  readPlainTextFile,
-  type IntakeResult,
-} from "../../lib/intake/text-file.ts";
+import { CONTRACT_FILE_ACCEPT } from "../../lib/intake/formats.ts";
+import { INTAKE_REFUSAL_MESSAGES, normalisePastedText } from "../../lib/intake/text-file.ts";
 import { ResultView } from "../analysis/result-view.tsx";
 import { ChangeParty } from "./change-party.tsx";
 import { chosenParty, NO_PARTY, partyFocusId, PartyPicker, partyProblem, type PartyChoice, type PartyProblem } from "./party-picker.tsx";
 import { postCheck, type CheckResult } from "./post-check.ts";
 
 type Stage =
-  | { kind: "intake"; refusal: string | null }
+  | {
+      kind: "intake";
+      refusal: string | null;
+      /** The name of the file being read in the browser, while it is read. */
+      reading: string | null;
+    }
   | {
       kind: "preview";
       text: string;
@@ -30,34 +31,63 @@ type Stage =
 
 type Props = { accountsOpen: boolean };
 
+/**
+ * Loads the file readers (and, through them, the PDF and Word parsers) only when a file is chosen.
+ * The `typeof window` test is settled at build time, so the server build of this page never
+ * reaches the import and the parsers stay out of the server bundle.
+ */
+function loadFileReader() {
+  return typeof window !== "undefined"
+    ? import("../../lib/intake/file.ts")
+    : Promise.reject(new Error("Files are read in the browser."));
+}
+
 /** Choose or paste, see the text, pick or type your party, check, then the result. */
 export function CheckFlow({ accountsOpen }: Props) {
-  const [stage, setStage] = useState<Stage>({ kind: "intake", refusal: null });
+  const [stage, setStage] = useState<Stage>({ kind: "intake", refusal: null, reading: null });
   const [pasted, setPasted] = useState("");
   const [choice, setChoice] = useState<PartyChoice>(NO_PARTY);
   const [partyError, setPartyError] = useState<PartyProblem | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  /** Counts file choices, so a slow read that a newer choice replaced is ignored. */
+  const readCount = useRef(0);
   const ids = { file: useId(), paste: useId(), party: useId() };
 
-  function accept(result: IntakeResult, source: "file" | "paste") {
-    if (result.ok) {
-      const candidates = findPartyCandidates(result.text);
-      setStage({ kind: "preview", text: result.text, candidates, source, error: null, running: false });
-      setChoice(NO_PARTY);
-      setPartyError(null);
-    } else {
-      setStage({ kind: "intake", refusal: INTAKE_REFUSAL_MESSAGES[result.reason] });
-    }
+  function showPreview(text: string, source: "file" | "paste") {
+    const candidates = findPartyCandidates(text);
+    setStage({ kind: "preview", text, candidates, source, error: null, running: false });
+    setChoice(NO_PARTY);
+    setPartyError(null);
   }
 
+  function refuse(message: string) {
+    setStage({ kind: "intake", refusal: message, reading: null });
+    if (fileInput.current) fileInput.current.value = "";
+  }
+
+  /**
+   * Reads the chosen file here in the browser. Accepted text goes to the preview; a refused file
+   * shows its message in place and nothing is kept or sent.
+   */
   async function onFile(files: FileList | null) {
     const file = files?.[0];
     if (!file) return;
-    accept(await readPlainTextFile(file), "file");
+    const read = ++readCount.current;
+    setStage({ kind: "intake", refusal: null, reading: file.name });
+    const current = () => read === readCount.current;
+    await loadFileReader()
+      .then(({ takeContractFile }) =>
+        takeContractFile(file, {
+          onText: (text) => current() && showPreview(text, "file"),
+          onRefused: (message) => current() && refuse(message),
+        }),
+      )
+      .catch(() => current() && refuse("Redline couldn't read that file. Try again, or paste the text below."));
   }
 
   function startOver() {
-    setStage({ kind: "intake", refusal: null });
+    readCount.current += 1;
+    setStage({ kind: "intake", refusal: null, reading: null });
     setChoice(NO_PARTY);
     setPartyError(null);
     if (fileInput.current) fileInput.current.value = "";
@@ -188,8 +218,8 @@ export function CheckFlow({ accountsOpen }: Props) {
       <div className="check-intro">
         <h1 className="check-title">Check a contract</h1>
         <p className="check-lead">
-          Choose a .txt file or paste the contract&apos;s text. Your file stays on your computer.
-          Redline sends only the text.
+          Choose a PDF, Word (.docx) or .txt file, or paste the contract&apos;s text. Your file stays
+          on your computer. Redline sends only the text.
         </p>
       </div>
       <div className="check-sheet check-intake">
@@ -204,16 +234,23 @@ export function CheckFlow({ accountsOpen }: Props) {
             ref={fileInput}
             id={ids.file}
             type="file"
-            accept=".txt,text/plain"
+            accept={CONTRACT_FILE_ACCEPT}
             className="file-input"
+            disabled={stage.reading !== null}
+            aria-describedby={`${ids.file}-status`}
             onChange={(e) => void onFile(e.target.files)}
           />
+          <p id={`${ids.file}-status`} className="check-status" role="status">
+            {stage.reading ? `Reading ${stage.reading}…` : ""}
+          </p>
         </div>
         <form
           className="paste-form"
           onSubmit={(e) => {
             e.preventDefault();
-            accept(normalisePastedText(pasted), "paste");
+            const result = normalisePastedText(pasted);
+            if (result.ok) showPreview(result.text, "paste");
+            else refuse(INTAKE_REFUSAL_MESSAGES[result.reason]);
           }}
         >
           <div className="field">
