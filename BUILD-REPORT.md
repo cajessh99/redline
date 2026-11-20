@@ -69,9 +69,26 @@ The eleven product red lines have fixed ids (`ip-assignment`, `uncapped-indemnit
 fixtures and stored snapshots use the same ids. "Restore defaults" then knows which rows are
 product items.
 
+### B8. Email and password sign-in, with a confirm route
+Ticket 01 asks for sign-in "with an email address" and does not say how. This run uses email and
+password, because magic links depend on email delivery that is not set up yet. A `/auth/confirm`
+route turns Supabase's confirmation link into a session. Sign-out uses Supabase's global scope, so
+it ends every session the reader has.
+
+### B9. Tooling settings
+`package.json` has `"type": "module"`. `npm run typecheck` runs `next typegen` before `tsc`,
+because `server-only`'s types come from Next's generated declarations. Relative imports inside
+`lib/` carry their `.ts` extension, so plain Node can run the smoke script without a build step.
+
 ## Not verified (needs Supabase, Vercel, or a key)
 
-(Filled in as the build goes.)
+- Sign-up, sign-in, the confirmation email and global sign-out against a real Supabase project.
+  Code paths exist and the build passes. Nothing has run against a live project.
+- In Supabase, add `<site>/auth/confirm` to the allowed redirect URLs.
+- `NEXT_PUBLIC_*` values are baked in at build time, so rebuild or redeploy after setting them.
+- No Vercel deploy was made from this run.
+- Row-level security is tested against the real migration SQL in PGlite, with a stand-in for
+  Supabase's `auth` schema. The real `auth` schema has not been tested.
 
 ## Real-model smoke run
 
