@@ -1,9 +1,9 @@
 // Reading a stored analysis back. Rows come from jsonb, so their shape is checked here rather than
-// trusted, and every flag is verified again against the stored text before it can be shown
-// (ADR-0001). A flag that fails is left out, never shown without its source.
+// trusted, and every flag and every quoted receipt sentence is verified again against the stored
+// text before it can be shown (ADR-0001). One that fails is left out, never shown unverified.
 
 import { TIERS, type Tier } from "../red-lines/defaults.ts";
-import type { Flag } from "./analyse.ts";
+import type { Flag, ReceiptLine } from "./analyse.ts";
 import type { CheckedRedLine } from "./run.ts";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -33,6 +33,32 @@ export function parseStoredFlags(value: unknown, storedText: string): Flag[] {
     flags.push({ redLineId, redLineTitle, tier: tier as Tier, statement, sourceSentence, offset, counterOffer });
   }
   return flags;
+}
+
+/**
+ * Receipt lines from a stored analysis whose shape is right. An "addressed" line must still sit
+ * verbatim in the stored text at its offset; one that does not is corrupted data and is left out
+ * entirely. It is never turned into "not mentioned", which would be a claim the stored data does
+ * not support. ResultView then shows that red line as unavailable rather than skipping it.
+ */
+export function parseStoredReceipt(value: unknown, storedText: string): ReceiptLine[] {
+  if (!Array.isArray(value)) return [];
+  const lines: ReceiptLine[] = [];
+  for (const item of value) {
+    if (!isRecord(item)) continue;
+    const redLineId = str(item.redLineId);
+    const redLineTitle = str(item.redLineTitle);
+    if (!redLineId || !redLineTitle) continue;
+    if (item.kind === "not_mentioned") {
+      lines.push({ redLineId, redLineTitle, kind: "not_mentioned" });
+    } else if (item.kind === "addressed") {
+      const sentence = str(item.sentence);
+      const offset = typeof item.offset === "number" ? item.offset : -1;
+      if (!sentence || !isVerbatimAt(storedText, sentence, offset)) continue;
+      lines.push({ redLineId, redLineTitle, kind: "addressed", sentence, offset });
+    }
+  }
+  return lines;
 }
 
 /** The red lines a stored analysis checked, from its snapshot. */

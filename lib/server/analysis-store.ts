@@ -15,7 +15,7 @@ export function supabaseAnalysisStore(supabase: SupabaseClient): AnalysisStore {
         p_party: record.party,
         p_red_lines_snapshot: record.redLinesSnapshot,
         p_flags: record.flags,
-        p_receipt: [],
+        p_receipt: record.receipt,
       });
       if (error) throw new Error(`save_document_analysis failed: ${error.code ?? ""} ${error.message}`);
       if (typeof data !== "string") throw new Error("save_document_analysis returned no document id");

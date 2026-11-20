@@ -92,6 +92,18 @@ run reads a paragraph boundary as a blank line. Inside a paragraph, every whites
 a single line break and a non-breaking space, becomes one space. Paragraphs are joined by one blank
 line. Typographic quotes are left alone.
 
+### B12. Receipt edge cases
+If every candidate for a red line is dropped, the receipt line for it shows the model's verified
+addressing sentence, which can be the same sentence the model tried to flag, shown with no flag.
+D7 refuses false alarms and accepts misses, and this follows from that. A stored sentence that no
+longer matches the stored text is treated as corrupt data. The red line still shows, with a line
+saying Redline isn't showing the saved sentence. It is never shown as "does not mention this",
+because that would be a claim nothing supports.
+
+### B13. Regeneration asks for exactly one correction per failed item
+The first real-model run showed one regenerated candidate coming back as two flags. Regeneration
+now asks for one correction per failed candidate, each keyed to that candidate, and ignores extras.
+
 ## Not verified (needs Supabase, Vercel, or a key)
 
 - Sign-up, sign-in, the confirmation email and global sign-out against a real Supabase project.

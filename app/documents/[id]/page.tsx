@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { notFound, redirect } from "next/navigation";
-import { parseCheckedRedLines, parseStoredFlags } from "../../../lib/analysis/stored.ts";
+import { parseCheckedRedLines, parseStoredFlags, parseStoredReceipt } from "../../../lib/analysis/stored.ts";
 import { createSupabaseServerClient } from "../../../lib/supabase/server.ts";
 import { ResultView } from "../../analysis/result-view.tsx";
 
@@ -10,7 +10,7 @@ export const metadata = { title: "Saved result · Redline" };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type DocumentRow = { id: string; title: string; stored_text: string; party: string };
-type AnalysisRow = { flags: unknown; red_lines_snapshot: unknown };
+type AnalysisRow = { flags: unknown; receipt: unknown; red_lines_snapshot: unknown };
 
 /**
  * A stored document and its latest analysis, read under the reader's own session, so row-level
@@ -34,7 +34,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
 
   const { data: analysis } = await supabase
     .from("analyses")
-    .select("flags, red_lines_snapshot")
+    .select("flags, receipt, red_lines_snapshot")
     .eq("document_id", id)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -60,6 +60,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
             storedText={document.stored_text}
             party={document.party}
             flags={parseStoredFlags(analysis.flags, document.stored_text)}
+            receipt={parseStoredReceipt(analysis.receipt, document.stored_text)}
             checkedRedLines={parseCheckedRedLines(analysis.red_lines_snapshot)}
           />
         </div>

@@ -61,5 +61,16 @@ for (const [i, flag] of result.flags.entries()) {
   console.log(`   Verbatim at offset: ${verbatim ? "yes" : "NO"}`);
 }
 console.log("");
+console.log(`Receipt: ${result.receipt.length} line(s)`);
+for (const line of result.receipt) {
+  if (line.kind === "addressed") {
+    const verbatim = text.slice(line.offset, line.offset + line.sentence.length) === line.sentence;
+    console.log(`- ${line.redLineId}: addressed at offset ${line.offset} (verbatim: ${verbatim ? "yes" : "NO"})`);
+    console.log(`   "${line.sentence}"`);
+  } else {
+    console.log(`- ${line.redLineId}: the document does not mention this`);
+  }
+}
+console.log("");
 console.log(`Checked: ${result.checkedRedLineIds.join(", ")}`);
 console.log(`Diagnostics: ${JSON.stringify(result.diagnostics)}`);

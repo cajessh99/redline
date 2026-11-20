@@ -109,7 +109,7 @@ function matchesFor(redLineId: string, candidates: CandidatePayload[]): MatchPay
 export function analysisPayload(
   redLineIds: readonly string[],
   candidates: CandidatePayload[],
-  receipt: Sidecar["receipt"] = [],
+  receipt: ReadonlyArray<{ redLineId: string; addressingSentence: string | null }> = [],
 ) {
   const ids = [...new Set([...redLineIds, ...candidates.map((candidate) => candidate.redLineId)])];
   return {
@@ -130,11 +130,25 @@ export function sidecarPayload(
   return analysisPayload(redLineIds, sidecar.flags.map((flag) => candidateFromSidecar(flag)), sidecar.receipt);
 }
 
-/** A regeneration payload: corrected candidates for the named red lines (may be empty). */
-export function regenerationPayload(redLineIds: readonly string[], candidates: CandidatePayload[]) {
-  const ids = [...new Set([...redLineIds, ...candidates.map((candidate) => candidate.redLineId)])];
+/** A corrected candidate. failureId defaults to `${redLineId}#n`, n counting from 1 per red line in list order. */
+export type CorrectionPayload = CandidatePayload & { failureId?: string };
+
+export type AddressingPayload = { redLineId: string; addressingSentence: string | null };
+
+/**
+ * A regeneration payload: one correction per failed candidate (leave a failure out to have the
+ * model return nothing for it), and corrected addressing sentences (null for "not addressed").
+ * Failure ids follow analyse()'s numbering: a red line's failed first-pass candidates, in order.
+ */
+export function regenerationPayload(corrections: CorrectionPayload[] = [], addressing: AddressingPayload[] = []) {
+  const counts = new Map<string, number>();
   return {
-    redLines: ids.map((redLineId) => ({ redLineId, matches: matchesFor(redLineId, candidates) })),
+    corrections: corrections.map(({ failureId, redLineId, tier, statement, sourceSentence, counterOffer }) => {
+      const n = (counts.get(redLineId) ?? 0) + 1;
+      counts.set(redLineId, n);
+      return { failureId: failureId ?? `${redLineId}#${n}`, matches: [{ tier, statement, sourceSentence, counterOffer }] };
+    }),
+    addressing,
   };
 }
 

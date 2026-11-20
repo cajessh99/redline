@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useId, useRef, useState, type FormEvent } from "react";
-import type { Flag } from "../../lib/analysis/analyse.ts";
+import type { Flag, ReceiptLine } from "../../lib/analysis/analyse.ts";
 import type { CheckedRedLine, SavedState } from "../../lib/analysis/run.ts";
 import {
   INTAKE_REFUSAL_MESSAGES,
@@ -16,6 +16,7 @@ type Result = {
   title: string;
   party: string;
   flags: Flag[];
+  receipt: ReceiptLine[];
   checkedRedLines: CheckedRedLine[];
   saved: SavedState;
 };
@@ -119,6 +120,7 @@ export function CheckFlow({ accountsOpen }: Props) {
             storedText={stage.text}
             party={stage.result.party}
             flags={stage.result.flags}
+            receipt={stage.result.receipt}
             checkedRedLines={stage.result.checkedRedLines}
           />
         </div>

@@ -1091,38 +1091,70 @@ h3.flag-line {
   font-weight: 600;
 }
 
-h3.checked-heading {
+/* The receipt: ruled rows on the paper, one per red line with no flag. No tier ink (Ink Is Earned);
+   the plain stamp says "No flag" in words. Quoted sentences are serif and selectable. */
+h3.receipt-heading {
   margin: 2rem 0 0.2rem;
 }
 
-.checked-list {
+.result-empty + h3.receipt-heading {
+  margin-top: 0.4rem;
+}
+
+.receipt-list {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.checked-list li {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 0.4rem 1.2rem;
-  padding: 0.75rem 0;
+.receipt-line {
+  padding: 1rem 0 1.05rem;
   border-bottom: 1px solid var(--rule);
 }
 
-.checked-list li:last-child {
+.receipt-line:last-child {
   border-bottom: 0;
 }
 
-.checked-title {
-  font-weight: 600;
-  line-height: 1.35;
+.receipt-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+  margin: 0 0 0.5rem;
 }
 
-.checked-count {
-  flex: none;
+h4.receipt-title {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+.receipt-source {
+  margin: 0;
+  padding: 0;
+  font-family: var(--serif);
+  font-size: 1rem;
+  line-height: 1.55;
+  max-width: 44rem;
+  user-select: text;
+  overflow-wrap: anywhere;
+}
+
+.receipt-source p {
+  margin: 0;
+}
+
+.receipt-source p::before { content: "\201C"; }
+.receipt-source p::after { content: "\201D"; }
+
+.receipt-note {
+  margin: 0;
   color: var(--toner-soft);
-  font-size: 0.9375rem;
+  max-width: 40rem;
 }
 
 .proof-statement {
@@ -1149,10 +1181,6 @@ h3.checked-heading {
 }
 
 @media (max-width: 560px) {
-  .checked-list li {
-    flex-direction: column;
-  }
-
   .check-sheet,
   .check-form,
   .text-preview {

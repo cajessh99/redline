@@ -8,7 +8,7 @@
 import { normaliseText } from "../intake/normalise.ts";
 import { MAX_DOCUMENT_CHARS } from "../intake/text-file.ts";
 import type { RedLine } from "../red-lines/defaults.ts";
-import { analyse, type AnalysisDiagnostics, type Flag } from "./analyse.ts";
+import { analyse, type AnalysisDiagnostics, type Flag, type ReceiptLine } from "./analyse.ts";
 import type { ModelClient } from "./model.ts";
 
 /** The longest party name accepted, in characters. A role is a word or two. */
@@ -25,6 +25,8 @@ export type AnalysisRecord = {
   /** The red lines checked in this run, as they were worded at the time. */
   redLinesSnapshot: RedLine[];
   flags: Flag[];
+  /** One line for each checked red line with no flag (D9). */
+  receipt: ReceiptLine[];
 };
 
 /** Where a signed-in reader's documents go. Saves atomically and returns the document id. */
@@ -55,6 +57,7 @@ export type RunOutcome =
       title: string;
       party: string;
       flags: Flag[];
+      receipt: ReceiptLine[];
       checkedRedLines: CheckedRedLine[];
       saved: SavedState;
       /** For logs and the smoke script. The check page does not show it. */
@@ -145,6 +148,7 @@ export async function runAnalysis(body: unknown, deps: RunDeps): Promise<RunOutc
         party: readerParty,
         redLinesSnapshot: uniqueChecked,
         flags: result.flags,
+        receipt: result.receipt,
       });
       saved = { kind: "saved", documentId };
     } catch (error) {
@@ -159,6 +163,7 @@ export async function runAnalysis(body: unknown, deps: RunDeps): Promise<RunOutc
     title,
     party: readerParty,
     flags: result.flags,
+    receipt: result.receipt,
     checkedRedLines: uniqueChecked.map(({ id, title: redLineTitle }) => ({ id, title: redLineTitle })),
     saved,
     diagnostics: result.diagnostics,

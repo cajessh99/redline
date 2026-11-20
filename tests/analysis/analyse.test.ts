@@ -121,7 +121,7 @@ describe("analyse: verified flags from the fixture contract", () => {
   });
 
   it("asks for a schema with no confidence field anywhere", async () => {
-    const model = fakeModel(analysisPayload(DEFAULT_RED_LINE_IDS, [candidateFromSidecar(ipSevere, { sourceSentence: misquotedIp })]), regenerationPayload(["ip-assignment"], []));
+    const model = fakeModel(analysisPayload(DEFAULT_RED_LINE_IDS, [candidateFromSidecar(ipSevere, { sourceSentence: misquotedIp })]), regenerationPayload());
     await run(model);
     expect(model.calls).toHaveLength(2);
     const keys = (value: unknown): string[] =>
@@ -142,7 +142,7 @@ describe("analyse: misquotes are regenerated once, then dropped", () => {
         candidateFromSidecar(ipSevere, { sourceSentence: misquotedIp }),
         ...othersThan(ipSevere),
       ]),
-      regenerationPayload(["ip-assignment"], [candidateFromSidecar(ipSevere)]),
+      regenerationPayload([candidateFromSidecar(ipSevere)]),
     );
     const flags = flagsOf(await run(model));
     expect(model.calls).toHaveLength(2);
@@ -160,7 +160,7 @@ describe("analyse: misquotes are regenerated once, then dropped", () => {
         candidateFromSidecar(ipSevere, { sourceSentence: misquotedIp }),
         ...othersThan(ipSevere),
       ]),
-      regenerationPayload(["ip-assignment"], [
+      regenerationPayload([
         candidateFromSidecar(ipSevere, { sourceSentence: ipSevere.sentence.toUpperCase() }),
       ]),
     );
@@ -174,6 +174,16 @@ describe("analyse: misquotes are regenerated once, then dropped", () => {
       regenerated: 1,
       verifiedAfterRegeneration: 0,
       dropped: 1,
+      extrasIgnored: 0,
+      duplicates: 0,
+      flags: 6,
+      addressing: 0,
+      addressingVerifiedFirstPass: 0,
+      addressingRegenerated: 0,
+      addressingVerifiedAfterRegeneration: 0,
+      addressingDropped: 0,
+      receiptAddressed: 0,
+      receiptNotMentioned: 1,
     });
     expect(flags.some((f) => f.redLineId === "ip-assignment" && f.tier === "Severe")).toBe(false);
     expect(flags.some((f) => f.redLineId === "ip-assignment" && f.tier === "Minor")).toBe(true);
@@ -183,20 +193,39 @@ describe("analyse: misquotes are regenerated once, then dropped", () => {
   it("drops the candidate when the regeneration returns no matches", async () => {
     const model = fakeModel(
       analysisPayload(DEFAULT_RED_LINE_IDS, [candidateFromSidecar(ipSevere, { sourceSentence: misquotedIp })]),
-      regenerationPayload(["ip-assignment"], []),
+      regenerationPayload(),
     );
     expect(flagsOf(await run(model))).toEqual([]);
     expect(model.calls).toHaveLength(2);
   });
 
-  it("ignores regenerated candidates for red lines that did not fail", async () => {
+  it("ignores corrections for failures it did not send back, and extra matches for one failure", async () => {
     const nonCompete = planted("non-compete", "Severe");
+    const payload = regenerationPayload([candidateFromSidecar(ipSevere), candidateFromSidecar(nonCompete)]);
+    // A second match under the one failure id: asked for at most one, so never checked or shown.
+    const minor = planted("ip-assignment", "Minor");
+    payload.corrections[0].matches.push({
+      tier: minor.tier,
+      statement: minor.statement,
+      sourceSentence: minor.sentence,
+      counterOffer: minor.counterOffer,
+    });
     const model = fakeModel(
       analysisPayload(DEFAULT_RED_LINE_IDS, [candidateFromSidecar(ipSevere, { sourceSentence: misquotedIp })]),
-      regenerationPayload(["ip-assignment"], [candidateFromSidecar(ipSevere), candidateFromSidecar(nonCompete)]),
+      payload,
     );
-    const flags = flagsOf(await run(model));
-    expect(flags.map((f) => f.redLineId)).toEqual(["ip-assignment"]);
+    const result = await run(model);
+    const flags = flagsOf(result);
+    expect(flags.map((f) => [f.redLineId, f.tier])).toEqual([["ip-assignment", "Severe"]]);
+    expect(result.ok && result.diagnostics).toMatchObject({
+      candidates: 1,
+      verifiedFirstPass: 0,
+      regenerated: 1,
+      verifiedAfterRegeneration: 1,
+      dropped: 0,
+      extrasIgnored: 1,
+      flags: 1,
+    });
   });
 
   it("makes no second call when every candidate verifies", async () => {
@@ -214,7 +243,7 @@ describe("analyse: banned words in a statement are treated like a misquote", () 
   it("regenerates a statement that uses a banned word and shows the corrected one", async () => {
     const model = fakeModel(
       analysisPayload(DEFAULT_RED_LINE_IDS, [hedged]),
-      regenerationPayload(["ip-assignment"], [candidateFromSidecar(ipSevere)]),
+      regenerationPayload([candidateFromSidecar(ipSevere)]),
     );
     const flags = flagsOf(await run(model));
     expect(model.calls).toHaveLength(2);
@@ -225,7 +254,7 @@ describe("analyse: banned words in a statement are treated like a misquote", () 
   it("drops the candidate when the banned word comes back", async () => {
     const model = fakeModel(
       analysisPayload(DEFAULT_RED_LINE_IDS, [hedged]),
-      regenerationPayload(["ip-assignment"], [
+      regenerationPayload([
         candidateFromSidecar(ipSevere, { statement: "This clause is not Standard for freelancers." }),
       ]),
     );

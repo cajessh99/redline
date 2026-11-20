@@ -4,17 +4,24 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { ResultView, LEGAL_STATEMENT, PROOF_STATEMENT } from "../../app/analysis/result-view.tsx";
+import {
+  DOES_NOT_MENTION,
+  LEGAL_STATEMENT,
+  PROOF_STATEMENT,
+  RESULT_UNAVAILABLE,
+  ResultView,
+} from "../../app/analysis/result-view.tsx";
 import { CheckFlow } from "../../app/check/check-flow.tsx";
-import { analyse, type Flag } from "../../lib/analysis/analyse.ts";
+import { analyse, type Flag, type ReceiptLine } from "../../lib/analysis/analyse.ts";
 import { RUN_ERROR_MESSAGES } from "../../lib/analysis/run.ts";
-import { parseCheckedRedLines, parseStoredFlags } from "../../lib/analysis/stored.ts";
+import { parseCheckedRedLines, parseStoredFlags, parseStoredReceipt } from "../../lib/analysis/stored.ts";
 import { findBannedWord } from "../../lib/copy/banned-words.ts";
 import { INTAKE_REFUSAL_MESSAGES } from "../../lib/intake/text-file.ts";
 import { defaultEnabledRedLines } from "../../lib/red-lines/defaults.ts";
-import { fakeModel, loadContract, sidecarPayload } from "../support/fake-model.ts";
+import { analysisPayload, fakeModel, loadContract, sidecarPayload } from "../support/fake-model.ts";
 
 const { text, sidecar } = loadContract("one-sided-services-agreement");
+const benign = loadContract("benign-services-agreement");
 const redLines = defaultEnabledRedLines();
 const checked = redLines.map(({ id, title }) => ({ id, title }));
 
@@ -40,16 +47,25 @@ function redlineCopy(markup: string, quoted: string[]): string {
     .reduce((rest, quote) => rest.split(quote).join(" "), readerText(markup));
 }
 
-async function analysedFlags(): Promise<Flag[]> {
-  const result = await analyse({ text, party: "Contractor", redLines }, { model: fakeModel(sidecarPayload(sidecar)) });
+async function analysed(storedText = text, payload: unknown = sidecarPayload(sidecar)) {
+  const result = await analyse({ text: storedText, party: "Contractor", redLines }, { model: fakeModel(payload) });
   if (!result.ok) throw new Error(result.error.message);
-  return result.flags;
+  return result;
 }
 
-function render(flags: Flag[]) {
+async function analysedFlags(): Promise<Flag[]> {
+  return (await analysed()).flags;
+}
+
+function render(flags: Flag[], receipt: ReceiptLine[] = [], storedText = text) {
   return renderToStaticMarkup(
-    createElement(ResultView, { storedText: text, party: "Contractor", flags, checkedRedLines: checked }),
+    createElement(ResultView, { storedText, party: "Contractor", flags, receipt, checkedRedLines: checked }),
   );
+}
+
+/** The receipt rows as rendered: [kind, inner html]. */
+function receiptRows(html: string): Array<[string, string]> {
+  return [...html.matchAll(/<li class="receipt-line" data-kind="(\w+)">([\s\S]*?)<\/li>/g)].map((m) => [m[1], m[2]]);
 }
 
 describe("ResultView", () => {
@@ -94,26 +110,92 @@ describe("ResultView", () => {
     expect(LEGAL_STATEMENT).toMatch(/law allows where you live/);
   });
 
-  it("lists every red line that was checked, with its flag count", async () => {
-    const seen = readerText(render(await analysedFlags()));
+  it("shows the receipt alongside the flags: every checked red line appears, the unflagged one with its sentence", async () => {
+    const { flags, receipt } = await analysed();
+    const html = render(flags, receipt);
+    const seen = readerText(html);
     for (const redLine of checked) expect(seen).toContain(redLine.title);
-    const list = seen.slice(seen.indexOf("Red lines checked"));
-    expect(list).toContain("Payment that depends on the client's discretion or on a third party paying first 2 flags");
-    expect(list).toContain("Uncapped indemnity or unlimited liability on me 1 flag");
-    expect(list).toContain("Termination without notice, or without pay for work already done No flag");
+    expect(seen).toContain("Red lines with no flag");
+    expect(seen).not.toContain("Red lines checked");
+
+    const rows = receiptRows(html);
+    expect(rows).toHaveLength(1);
+    const [kind, body] = rows[0];
+    expect(kind).toBe("addressed");
+    expect(decode(body)).toContain("Termination without notice, or without pay for work already done");
+    expect(decode(body)).toContain('<span class="stamp stamp-plain">No flag</span>');
+    const line = receipt[0];
+    if (line.kind !== "addressed") throw new Error("expected an addressed line");
+    expect(decode(body)).toContain(`<blockquote class="receipt-source"><p>${line.sentence}</p></blockquote>`);
+    // The receipt comes after the flags.
+    expect(html.indexOf('class="receipt-list"')).toBeGreaterThan(html.lastIndexOf('<li class="flag"'));
   });
 
-  it("says plainly when no flag survived, with no banned word", () => {
-    const html = render([]);
-    expect(readerText(html)).toContain("No flags");
-    expect(readerText(html)).toContain("None of the red lines below matched a sentence in this document.");
-    expect(findBannedWord(redlineCopy(html, []))).toBeNull();
+  it("shows a document with no flags as a full receipt, one row per red line, never an empty page", async () => {
+    const { flags, receipt } = await analysed(benign.text, sidecarPayload(benign.sidecar));
+    expect(flags).toEqual([]);
+    const html = render(flags, receipt, benign.text);
+    const seen = readerText(html);
+    expect(seen).toContain("No flags");
+    expect(seen).toContain("None of your 5 red lines matched a sentence in this document.");
+    const rows = receiptRows(html);
+    expect(rows.map(([kind]) => kind)).toEqual(["addressed", "addressed", "addressed", "addressed", "addressed"]);
+    rows.forEach(([, body], i) => {
+      expect(decode(body)).toContain(checked[i].title);
+      const sentence = benign.sidecar.receipt.find((r) => r.redLineId === checked[i].id)!.addressingSentence;
+      expect(decode(body)).toContain(`<p>${sentence}</p>`);
+    });
   });
 
-  it("uses no banned word in its own copy when showing flags", async () => {
-    const flags = await analysedFlags();
-    const html = render(flags);
-    expect(findBannedWord(redlineCopy(html, flags.map((f) => f.sourceSentence)))).toBeNull();
+  it("says the document does not mention a red line, word for word", async () => {
+    const { flags, receipt } = await analysed(benign.text, analysisPayload(redLines.map((r) => r.id), [], []));
+    expect(receipt.every((line) => line.kind === "not_mentioned")).toBe(true);
+    const html = render(flags, receipt, benign.text);
+    const rows = receiptRows(html);
+    expect(rows).toHaveLength(5);
+    for (const [kind, body] of rows) {
+      expect(kind).toBe("not_mentioned");
+      expect(decode(body)).toContain(`<p class="receipt-note">${DOES_NOT_MENTION}</p>`);
+    }
+    expect(DOES_NOT_MENTION).toBe("The document does not mention this.");
+    expect(readerText(html)).toContain("The document does not mention this");
+  });
+
+  it("never renders a receipt sentence that is not verbatim at its offset, and never calls it not mentioned", async () => {
+    const { flags, receipt } = await analysed();
+    const line = receipt[0];
+    if (line.kind !== "addressed") throw new Error("expected an addressed line");
+    const html = render(flags, [{ ...line, offset: line.offset + 1 }]);
+    const rows = receiptRows(html);
+    expect(rows).toEqual([[expect.any(String), expect.any(String)]]);
+    expect(rows[0][0]).toBe("unavailable");
+    expect(decode(rows[0][1])).toContain(RESULT_UNAVAILABLE);
+    expect(decode(rows[0][1])).not.toContain(line.sentence);
+    expect(decode(rows[0][1])).not.toContain(DOES_NOT_MENTION);
+    expect(decode(html)).not.toContain(line.sentence);
+  });
+
+  it("uses no banned word in its own copy, apart from the fixed statement, with flags and with a full receipt", async () => {
+    const withFlags = await analysed();
+    const benignResult = await analysed(benign.text, sidecarPayload(benign.sidecar));
+    const silent = await analysed(benign.text, analysisPayload(redLines.map((r) => r.id), [], []));
+    const quoted = (r: typeof withFlags) => [
+      ...r.flags.map((f) => f.sourceSentence),
+      ...r.receipt.flatMap((l) => (l.kind === "addressed" ? [l.sentence] : [])),
+    ];
+    const cases: Array<[typeof withFlags, string]> = [
+      [withFlags, text],
+      [benignResult, benign.text],
+      [silent, benign.text],
+    ];
+    for (const [result, storedText] of cases) {
+      const html = render(result.flags, result.receipt, storedText);
+      expect(readerText(html)).toContain(PROOF_STATEMENT);
+      const own = redlineCopy(html, quoted(result));
+      expect(findBannedWord(own), own).toBeNull();
+      expect(own).not.toMatch(/\bno issues\b/i);
+    }
+    for (const copy of [DOES_NOT_MENTION, RESULT_UNAVAILABLE]) expect(findBannedWord(copy)).toBeNull();
   });
 });
 
@@ -123,6 +205,46 @@ describe("stored analyses read back", () => {
     const stored = JSON.parse(JSON.stringify([...flags, { ...flags[0], offset: 3 }, { tier: "High" }]));
     expect(parseStoredFlags(stored, text)).toEqual(flags);
     expect(parseStoredFlags(null, text)).toEqual([]);
+  });
+
+  it("round-trip the receipt through JSON unchanged", async () => {
+    for (const [storedText, payload] of [
+      [text, sidecarPayload(sidecar)],
+      [benign.text, sidecarPayload(benign.sidecar)],
+      [benign.text, analysisPayload(redLines.map((r) => r.id), [], [])],
+    ] as const) {
+      const { receipt } = await analysed(storedText, payload);
+      expect(receipt.length).toBeGreaterThan(0);
+      expect(parseStoredReceipt(JSON.parse(JSON.stringify(receipt)), storedText)).toEqual(receipt);
+    }
+  });
+
+  it("drop a stored receipt sentence that no longer verifies, and anything of the wrong shape", async () => {
+    const { receipt } = await analysed(benign.text, sidecarPayload(benign.sidecar));
+    const [first, second, ...rest] = receipt;
+    if (first.kind !== "addressed" || second.kind !== "addressed") throw new Error("expected addressed lines");
+    const stored = JSON.parse(
+      JSON.stringify([
+        { ...first, offset: first.offset + 1 },
+        { ...second, sentence: second.sentence.replace("total liability", "whole liability") },
+        ...rest,
+        { redLineId: "x", redLineTitle: "X", kind: "addressed", sentence: "", offset: 0 },
+        { redLineId: "y", redLineTitle: "Y", kind: "mentioned" },
+        { redLineId: "z", kind: "not_mentioned" },
+        "not a line",
+      ]),
+    );
+    const read = parseStoredReceipt(stored, benign.text);
+    expect(read).toEqual(rest);
+    expect(JSON.stringify(read)).not.toContain(first.sentence);
+    expect(parseStoredReceipt(null, benign.text)).toEqual([]);
+    expect(parseStoredReceipt({}, benign.text)).toEqual([]);
+
+    // On screen the corrupted red lines are still listed, as unavailable, never as not mentioned.
+    const html = render([], read, benign.text);
+    const rows = receiptRows(html);
+    expect(rows.map(([kind]) => kind)).toEqual(["unavailable", "unavailable", "addressed", "addressed", "addressed"]);
+    expect(decode(html)).not.toContain(first.sentence);
   });
 
   it("read the checked red lines from the snapshot", () => {

@@ -4,12 +4,12 @@
 
 **Blocked by:** 03
 
-**Status:** ready-for-agent
+**Status:** done (2026-11-20)
 
-- [ ] Each enabled red line appears once, as either a flag or a receipt line
-- [ ] An addressing sentence that passes verification is shown verbatim
-- [ ] An addressing sentence that fails verification after one regeneration becomes "the document does not mention this", and the unverified sentence is never shown
-- [ ] A document with no matches shows a full receipt, not an empty page
-- [ ] Receipt copy uses no word on the banned-word list in PRODUCT.md (Brand Commitments), apart from the fixed receipt statement
-- [ ] Receipt lines are stored with the analysis
-- [ ] Tested with the fake model client, including a failed addressing sentence
+- [x] Each enabled red line appears once, as either a flag or a receipt line
+- [x] An addressing sentence that passes verification is shown verbatim
+- [x] An addressing sentence that fails verification after one regeneration becomes "the document does not mention this", and the unverified sentence is never shown
+- [x] A document with no matches shows a full receipt, not an empty page
+- [x] Receipt copy uses no word on the banned-word list in PRODUCT.md (Brand Commitments), apart from the fixed receipt statement
+- [x] Receipt lines are stored with the analysis
+- [x] Tested with the fake model client, including a failed addressing sentence

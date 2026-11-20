@@ -54,6 +54,16 @@ describe("runAnalysis", () => {
     expect(record.party).toBe("Contractor");
     expect(record.title).toBe("INDEPENDENT CONTRACTOR SERVICES AGREEMENT");
     expect(record.flags).toEqual(outcome.flags);
+    expect(outcome.receipt).toEqual([
+      {
+        redLineId: "termination-without-pay",
+        redLineTitle: "Termination without notice, or without pay for work already done",
+        kind: "addressed",
+        sentence: sidecar.receipt[0].addressingSentence,
+        offset: text.indexOf(sidecar.receipt[0].addressingSentence),
+      },
+    ]);
+    expect(record.receipt).toEqual(outcome.receipt);
     expect(record.redLinesSnapshot.map((r) => r.id)).toEqual([...DEFAULT_RED_LINE_IDS]);
     expect(record.redLinesSnapshot[0].tiers.Severe).toBeTruthy();
     expect(model.calls).toHaveLength(1);
