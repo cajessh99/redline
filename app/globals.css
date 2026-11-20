@@ -1540,6 +1540,118 @@ h3.red-line-title {
   margin: 0;
 }
 
+/* Red lines: edit, delete, add, restore (ticket 09). Plain forms ruled onto the same sheet. */
+
+.red-line-notice {
+  margin: 0 0 0.8rem;
+  max-width: 40rem;
+  padding: 0.1rem 0 0.1rem 0.9rem;
+  border-left: 3px solid var(--toner);
+  font-weight: 600;
+}
+
+.red-line-notice:empty {
+  display: none;
+}
+
+.red-line-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-top: 0.5rem;
+}
+
+.red-line-actions .quiet-button {
+  min-height: 44px;
+  font-size: 0.9375rem;
+}
+
+.red-line-form {
+  display: grid;
+  gap: 1.1rem;
+  max-width: 44rem;
+  margin-top: 0.9rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+}
+
+h2.red-line-form-heading,
+h3.red-line-form-heading {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.red-line-form .field textarea {
+  min-height: 5.5rem;
+}
+
+.red-line-form .field-hint,
+.red-line-form .field-error {
+  max-width: 40rem;
+}
+
+.red-line-tier-fields {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.red-line-tier-fields legend {
+  padding: 0;
+  margin-bottom: 0.3rem;
+  font-weight: 700;
+}
+
+.red-line-tier-fields:focus-visible {
+  outline-offset: 6px;
+}
+
+.field textarea[aria-invalid="true"] {
+  border: 2px solid var(--toner);
+}
+
+.red-line-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+}
+
+.red-line-form-actions .quiet-button {
+  min-height: 44px;
+}
+
+.red-line-footer {
+  display: grid;
+  gap: 1.4rem;
+  margin-top: 1.6rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--rule);
+}
+
+.red-line-footer > .action {
+  justify-self: start;
+}
+
+.red-line-footer .red-line-form {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.red-line-restore .quiet-button {
+  min-height: 44px;
+}
+
+.red-line-empty h2 {
+  margin-bottom: 0.4rem;
+}
+
 @media (max-width: 560px) {
   .red-line-sheet {
     padding: 18px 16px;

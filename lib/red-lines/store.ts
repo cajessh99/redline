@@ -17,6 +17,7 @@ import {
   type RedLineKind,
   type Tier,
 } from "./defaults.ts";
+import type { RedLineWording } from "./validation.ts";
 
 /** A red_lines row as the database returns it. */
 export type RedLineRow = {
@@ -58,7 +59,21 @@ export interface RedLineTransport {
   selectRows(): Promise<RedLineRow[]>;
   /** Sets one row's enabled flag. Returns the updated row, or null when no row of the reader's has that id. */
   updateEnabled(rowId: string, enabled: boolean): Promise<RedLineRow | null>;
+  /**
+   * Sets one row's title, description and tiers, and nothing else (never product_id or kind).
+   * Returns the updated row, or null when no row of the reader's has that id.
+   */
+  updateWording(rowId: string, wording: RedLineWording): Promise<RedLineRow | null>;
+  /** Inserts one reader-authored row (kind 'reader', no product id) and returns it. */
+  insertOwn(row: OwnRow): Promise<RedLineRow>;
+  /** Deletes one row. Returns false when no row of the reader's has that id. */
+  deleteRow(rowId: string): Promise<boolean>;
+  /** Calls restore_default_red_lines(). Returns how many rows it wrote. */
+  restore(rows: SeedRow[]): Promise<number>;
 }
+
+/** What insertOwn() stores for a red line the reader writes. */
+export type OwnRow = RedLineWording & { enabled: boolean; position: number };
 
 /** The port. */
 export interface RedLineStore {
@@ -66,6 +81,18 @@ export interface RedLineStore {
   listForReader(): Promise<StoredRedLine[]>;
   /** Switches one red line on or off. Returns it as stored; throws when it is not the reader's. */
   setEnabled(rowId: string, enabled: boolean): Promise<StoredRedLine>;
+  /** Rewords one red line (product items included; its id and kind stay). Throws when it is not the reader's. */
+  updateWording(rowId: string, wording: RedLineWording): Promise<StoredRedLine>;
+  /** Adds a red line the reader wrote: switched on, at the end of the list. */
+  addOwn(wording: RedLineWording): Promise<StoredRedLine>;
+  /** Deletes one red line. Throws when it is not the reader's. */
+  remove(rowId: string): Promise<void>;
+  /**
+   * Puts the eleven product items back to their shipped wording, switch state and position,
+   * re-adding any the reader deleted, and leaves the reader's own red lines as they are. Returns
+   * the whole list afterwards.
+   */
+  restoreDefaults(): Promise<StoredRedLine[]>;
 }
 
 export class RedLineNotFoundError extends Error {}
@@ -135,27 +162,58 @@ export function toRedLine({ id, kind, title, description, tiers }: RedLine): Red
   return { id, kind, title, description, tiers: { ...tiers } };
 }
 
+/**
+ * Where a new reader-authored red line goes: after everything the reader has, and never among the
+ * positions the eleven product items take when restored.
+ */
+export function nextPosition(rows: ReadonlyArray<Pick<RedLineRow, "position">>): number {
+  const last = rows.reduce((max, row) => Math.max(max, row.position), -1);
+  return Math.max(last + 1, PRODUCT_RED_LINES.length);
+}
+
 function byPosition(a: StoredRedLine, b: StoredRedLine): number {
   return a.position - b.position || a.rowId.localeCompare(b.rowId);
 }
 
 /** The store over a transport. */
 export function redLineStore(transport: RedLineTransport): RedLineStore {
+  /** The reader's rows, seeding the list first if this is their first use. */
+  async function seededRows(): Promise<RedLineRow[]> {
+    let rows = await transport.selectRows();
+    // A reader has rows only once seeded, so an empty list is either a new reader or one who
+    // deleted everything. seed_red_lines() tells them apart and inserts only for the first.
+    if (rows.length === 0) {
+      const inserted = await transport.seed(seedRows());
+      if (inserted > 0) rows = await transport.selectRows();
+    }
+    return rows;
+  }
+
   return {
     async listForReader() {
-      let rows = await transport.selectRows();
-      // A reader has rows only once seeded, so an empty list is either a new reader or one who
-      // deleted everything. seed_red_lines() tells them apart and inserts only for the first.
-      if (rows.length === 0) {
-        const inserted = await transport.seed(seedRows());
-        if (inserted > 0) rows = await transport.selectRows();
-      }
-      return rows.map(fromRow).sort(byPosition);
+      return (await seededRows()).map(fromRow).sort(byPosition);
     },
     async setEnabled(rowId, enabled) {
       const row = await transport.updateEnabled(rowId, enabled);
       if (!row) throw new RedLineNotFoundError(`no red line ${rowId} for this reader`);
       return fromRow(row);
+    },
+    async updateWording(rowId, wording) {
+      const row = await transport.updateWording(rowId, wording);
+      if (!row) throw new RedLineNotFoundError(`no red line ${rowId} for this reader`);
+      return fromRow(row);
+    },
+    async addOwn(wording) {
+      // Seeding first: otherwise a new reader's own red line would make their list look seeded.
+      const position = nextPosition(await seededRows());
+      return fromRow(await transport.insertOwn({ ...wording, enabled: true, position }));
+    },
+    async remove(rowId) {
+      if (!(await transport.deleteRow(rowId))) throw new RedLineNotFoundError(`no red line ${rowId} for this reader`);
+    },
+    async restoreDefaults() {
+      await transport.restore(seedRows());
+      return (await transport.selectRows()).map(fromRow).sort(byPosition);
     },
   };
 }

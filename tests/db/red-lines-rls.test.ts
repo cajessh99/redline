@@ -15,35 +15,10 @@ import {
   RedLineNotFoundError,
   seedRows,
   type RedLineRow,
-  type RedLineTransport,
 } from "../../lib/red-lines/store.ts";
 import { fakeModel, loadContract, sidecarPayload } from "../support/fake-model.ts";
 import { createTestDb, type TestDb } from "./harness.ts";
-
-const COLUMNS = "id, product_id, kind, title, description, tiers, enabled, position";
-
-function pgTransport(t: TestDb, reader: string): RedLineTransport {
-  return {
-    async seed(rows) {
-      const { rows: out } = await t.asUser<{ n: number }>(reader, "select public.seed_red_lines($1::jsonb) as n", [
-        JSON.stringify(rows),
-      ]);
-      return out[0].n;
-    },
-    async selectRows() {
-      const { rows } = await t.asUser<RedLineRow>(reader, `select ${COLUMNS} from public.red_lines order by position`);
-      return rows;
-    },
-    async updateEnabled(rowId, enabled) {
-      const { rows } = await t.asUser<RedLineRow>(
-        reader,
-        `update public.red_lines set enabled = $2 where id = $1 returning ${COLUMNS}`,
-        [rowId, enabled],
-      );
-      return rows[0] ?? null;
-    },
-  };
-}
+import { pgTransport } from "./red-line-transport.ts";
 
 describe("red lines under row-level security", () => {
   let t: TestDb;
@@ -185,7 +160,7 @@ describe("red lines under row-level security", () => {
 
     const oldTitle = redLines.find((r) => r.id === "termination-without-pay")!.title;
     const ipTitle = redLines.find((r) => r.id === "ip-assignment")!.title;
-    // The reader edits two red lines afterwards (as ticket 09 will let them).
+    // The reader edits two red lines afterwards (red-lines-editing.test.ts covers edit, delete and restore through the store).
     await t.asUser(erin, "update public.red_lines set title = 'Renamed termination' where product_id = 'termination-without-pay'");
     await t.asUser(erin, "update public.red_lines set title = 'Renamed IP' where product_id = 'ip-assignment'");
 

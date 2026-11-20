@@ -1,9 +1,14 @@
-// The reader's red lines, as they read on the page (spec stories 11 to 14, 18). Presentational:
-// the switch state for each row and what happens on a click come from the caller, so this renders
-// on the server in tests with no browser.
+// The reader's red lines, as they read on the page (spec stories 11 to 19). Presentational: the
+// switch, form and delete state for each row, and what happens on a click, come from the caller,
+// so this renders on the server in tests with no browser.
 
+import type { ReactNode } from "react";
 import { TIERS } from "../../lib/red-lines/defaults.ts";
 import type { StoredRedLine } from "../../lib/red-lines/store.ts";
+import { draftFrom } from "../../lib/red-lines/validation.ts";
+import { EDIT_COPY } from "./edit-copy.ts";
+import { CLOSED, IDLE, type ConfirmEvent, type ConfirmState, type FormEvent, type FormState } from "./edit-state.ts";
+import { RedLineForm } from "./red-line-form.tsx";
 import { shownEnabled, SWITCH_COPY, type SwitchEvent, type SwitchState } from "./switch-state.ts";
 
 export const RED_LINES_COPY = {
@@ -32,18 +37,43 @@ export function showsDescription(redLine: Pick<StoredRedLine, "title" | "descrip
   return !tierTexts.every((text) => redLine.description.includes(text));
 }
 
+/** Ids inside one red line's row, so the editor can move focus to them. */
+export function rowIds(rowId: string) {
+  const base = `red-line-${rowId}`;
+  return {
+    title: base,
+    edit: `${base}-edit`,
+    delete: `${base}-delete`,
+    form: `${base}-form`,
+    deleteWarning: `${base}-delete-warning`,
+  };
+}
+
+/** Editing and deleting, for a row. Left out, the row shows only its switch and details. */
+export type RowEditing = {
+  formOf: (redLine: StoredRedLine) => FormState;
+  sendForm: (redLine: StoredRedLine, event: FormEvent) => void;
+  deleteOf: (redLine: StoredRedLine) => ConfirmState;
+  sendDelete: (redLine: StoredRedLine, event: ConfirmEvent) => void;
+};
+
 type RowProps = {
   redLine: StoredRedLine;
   state: SwitchState;
   send: (redLine: StoredRedLine, event: SwitchEvent) => void;
+  editing?: RowEditing;
 };
 
-export function RedLineItem({ redLine, state, send }: RowProps) {
+export function RedLineItem({ redLine, state, send, editing }: RowProps) {
   const on = shownEnabled(state);
-  const titleId = `red-line-${redLine.rowId}`;
+  const ids = rowIds(redLine.rowId);
+  const titleId = ids.title;
   const warningId = `${titleId}-warning`;
   const confirming = state.kind === "confirming_off";
   const saving = state.kind === "saving";
+  const form = editing ? editing.formOf(redLine) : CLOSED;
+  const del = editing ? editing.deleteOf(redLine) : IDLE;
+  const busy = form.kind !== "closed" || del.kind !== "idle";
 
   return (
     <li className="red-line-item">
@@ -92,6 +122,16 @@ export function RedLineItem({ redLine, state, send }: RowProps) {
         </p>
       ) : null}
 
+      {editing && form.kind !== "closed" ? (
+        <RedLineForm
+          idBase={ids.form}
+          heading={EDIT_COPY.editHeading}
+          headingLevel={3}
+          state={form}
+          submitLabel={EDIT_COPY.save}
+          send={(event) => editing.sendForm(redLine, event)}
+        />
+      ) : (
       <details className="red-line-details">
         <summary>{RED_LINES_COPY.details}</summary>
         {showsDescription(redLine) ? (
@@ -109,6 +149,60 @@ export function RedLineItem({ redLine, state, send }: RowProps) {
           ))}
         </dl>
       </details>
+      )}
+
+      {editing && form.kind === "closed" ? (
+        <div className="red-line-actions">
+          <button
+            type="button"
+            id={ids.edit}
+            className="quiet-button"
+            disabled={busy}
+            onClick={() =>
+              editing.sendForm(redLine, {
+                type: "open",
+                draft: draftFrom({ title: redLine.title, description: redLine.description, tiers: redLine.tiers }),
+              })
+            }
+          >
+            {EDIT_COPY.edit}
+            <span className="visually-hidden"> {redLine.title}</span>
+          </button>
+          <button
+            type="button"
+            id={ids.delete}
+            className="quiet-button"
+            disabled={busy}
+            aria-describedby={del.kind === "confirming" ? ids.deleteWarning : undefined}
+            onClick={() => editing.sendDelete(redLine, { type: "ask" })}
+          >
+            {del.kind === "working" ? EDIT_COPY.deleting : EDIT_COPY.delete}
+            <span className="visually-hidden"> {redLine.title}</span>
+          </button>
+        </div>
+      ) : null}
+
+      {editing && del.kind === "confirming" ? (
+        <div className="red-line-warning">
+          <p id={ids.deleteWarning} role="alert" tabIndex={-1}>
+            {redLine.kind === "reader" ? EDIT_COPY.deleteWarningOwn : EDIT_COPY.deleteWarningProduct}
+          </p>
+          <div className="red-line-warning-actions">
+            <button type="button" className="action action-secondary" onClick={() => editing.sendDelete(redLine, { type: "confirm" })}>
+              {EDIT_COPY.deleteConfirm}
+            </button>
+            <button type="button" className="quiet-button" onClick={() => editing.sendDelete(redLine, { type: "cancel" })}>
+              {EDIT_COPY.deleteCancel}
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {editing && del.kind === "idle" && del.failed ? (
+        <p className="account-error" role="alert">
+          {EDIT_COPY.deleteFailed}
+        </p>
+      ) : null}
     </li>
   );
 }
@@ -117,10 +211,13 @@ type ListProps = {
   redLines: readonly StoredRedLine[];
   stateOf: (redLine: StoredRedLine) => SwitchState;
   send: (redLine: StoredRedLine, event: SwitchEvent) => void;
+  editing?: RowEditing;
+  /** Rendered at the foot of the sheet: the add form and restore control. */
+  footer?: ReactNode;
 };
 
 /** Every red line the reader has: the starting defaults first, then the offered ones, then their own. */
-export function RedLineList({ redLines, stateOf, send }: ListProps) {
+export function RedLineList({ redLines, stateOf, send, editing, footer }: ListProps) {
   const groups = [
     { key: "default", heading: RED_LINES_COPY.defaultsHeading, note: RED_LINES_COPY.defaultsNote },
     { key: "offered", heading: RED_LINES_COPY.offeredHeading, note: RED_LINES_COPY.offeredNote },
@@ -145,12 +242,13 @@ export function RedLineList({ redLines, stateOf, send }: ListProps) {
               {group.note ? <p className="red-line-note">{group.note}</p> : null}
               <ul className="red-line-items">
                 {items.map((redLine) => (
-                  <RedLineItem key={redLine.rowId} redLine={redLine} state={stateOf(redLine)} send={send} />
+                  <RedLineItem key={redLine.rowId} redLine={redLine} state={stateOf(redLine)} send={send} editing={editing} />
                 ))}
               </ul>
             </section>
           );
         })}
+        {footer}
       </div>
     </>
   );

@@ -4,10 +4,10 @@
 
 **Blocked by:** 08
 
-**Status:** ready-for-agent
+**Status:** done (2026-11-20; tested in PGlite only)
 
-- [ ] The reader can edit any red line's title, description, and tier descriptions
-- [ ] The reader can add a reader-authored red line in plain English
-- [ ] The reader can delete any red line, and is warned that the risk it covered will no longer be flagged
-- [ ] "Restore defaults" rewrites the eleven product items to their shipped wording and switch state, and leaves reader-authored items untouched
-- [ ] Past analyses keep their stored snapshot, so editing a red line does not change an old result
+- [x] The reader can edit any red line's title, description, and tier descriptions
+- [x] The reader can add a reader-authored red line in plain English
+- [x] The reader can delete any red line, and is warned that the risk it covered will no longer be flagged
+- [x] "Restore defaults" rewrites the eleven product items to their shipped wording and switch state, and leaves reader-authored items untouched
+- [x] Past analyses keep their stored snapshot, so editing a red line does not change an old result

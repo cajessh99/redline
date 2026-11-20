@@ -4,6 +4,7 @@ import type { RedLine } from "../red-lines/defaults.ts";
 import {
   enabledRedLines,
   redLineStore,
+  type OwnRow,
   type RedLineRow,
   type RedLineStore,
   type RedLineTransport,
@@ -40,6 +41,44 @@ export function supabaseRedLineTransport(supabase: SupabaseClient): RedLineTrans
         .maybeSingle<RedLineRow>();
       if (error) throw new Error(`switching a red line failed: ${error.code ?? ""} ${error.message}`);
       return data ?? null;
+    },
+    async updateWording(rowId, { title, description, tiers }): Promise<RedLineRow | null> {
+      // Only the wording columns are sent, so product_id and kind cannot change (0005 also refuses it).
+      const { data, error } = await supabase
+        .from("red_lines")
+        .update({ title, description, tiers })
+        .eq("id", rowId)
+        .select(COLUMNS)
+        .maybeSingle<RedLineRow>();
+      if (error) throw new Error(`saving a red line failed: ${error.code ?? ""} ${error.message}`);
+      return data ?? null;
+    },
+    async insertOwn(row: OwnRow): Promise<RedLineRow> {
+      const { data, error } = await supabase
+        .from("red_lines")
+        .insert({
+          product_id: null,
+          kind: "reader",
+          title: row.title,
+          description: row.description,
+          tiers: row.tiers,
+          enabled: row.enabled,
+          position: row.position,
+        })
+        .select(COLUMNS)
+        .single<RedLineRow>();
+      if (error || !data) throw new Error(`adding a red line failed: ${error?.code ?? ""} ${error?.message ?? "no row"}`);
+      return data;
+    },
+    async deleteRow(rowId: string): Promise<boolean> {
+      const { data, error } = await supabase.from("red_lines").delete().eq("id", rowId).select("id");
+      if (error) throw new Error(`deleting a red line failed: ${error.code ?? ""} ${error.message}`);
+      return (data ?? []).length > 0;
+    },
+    async restore(rows: SeedRow[]): Promise<number> {
+      const { data, error } = await supabase.rpc("restore_default_red_lines", { p_rows: rows });
+      if (error) throw new Error(`restore_default_red_lines failed: ${error.code ?? ""} ${error.message}`);
+      return typeof data === "number" ? data : 0;
     },
   };
 }
