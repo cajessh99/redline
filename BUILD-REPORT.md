@@ -80,6 +80,18 @@ it ends every session the reader has.
 because `server-only`'s types come from Next's generated declarations. Relative imports inside
 `lib/` carry their `.ts` extension, so plain Node can run the smoke script without a build step.
 
+### B10. A flag statement with a banned word is treated like a misquote
+Story 29 and D8 say flags never hedge, and PRODUCT.md bans "might" and "may". Prompt wording alone
+can't enforce that, so code checks each flag statement for a banned word. A statement that uses one
+is regenerated once, the same way a misquote is, and dropped if the word comes back. Counter-offers
+are exempt, because they are contract drafting and "may" is ordinary there.
+
+### B11. Normalisation rule
+The spec says whitespace is collapsed and line breaks are kept only at paragraph boundaries. This
+run reads a paragraph boundary as a blank line. Inside a paragraph, every whitespace run, including
+a single line break and a non-breaking space, becomes one space. Paragraphs are joined by one blank
+line. Typographic quotes are left alone.
+
 ## Not verified (needs Supabase, Vercel, or a key)
 
 - Sign-up, sign-in, the confirmation email and global sign-out against a real Supabase project.

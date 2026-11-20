@@ -1,0 +1,114 @@
+{
+  "about": "Synthetic contract excerpts written for the tests (spec story 62). One per default red line per tier, plus one benign excerpt that matches nothing. No real contract text. Each text is already normalised, and each sentence occurs exactly once in its text.",
+  "excerpts": [
+    {
+      "redLineId": "ip-assignment",
+      "tier": "Severe",
+      "party": "Contractor",
+      "text": "4. Ownership. Contractor hereby assigns to Client all rights in every tool, library, and piece of code that Contractor created before the Effective Date or outside the Services. Contractor shall deliver the source files for each Deliverable on completion.",
+      "sentence": "Contractor hereby assigns to Client all rights in every tool, library, and piece of code that Contractor created before the Effective Date or outside the Services."
+    },
+    {
+      "redLineId": "ip-assignment",
+      "tier": "Moderate",
+      "party": "Contractor",
+      "text": "5. Transfer of Deliverables. Title to each Deliverable passes to Client on delivery, before Client pays the related invoice.\n\nContractor shall keep a copy of each Deliverable for ninety (90) days after delivery.",
+      "sentence": "Title to each Deliverable passes to Client on delivery, before Client pays the related invoice."
+    },
+    {
+      "redLineId": "ip-assignment",
+      "tier": "Minor",
+      "party": "Contractor",
+      "text": "6. Publicity. Contractor shall not include any Deliverable in a portfolio, case study, or showreel. Client may list Contractor as a supplier on its website.",
+      "sentence": "Contractor shall not include any Deliverable in a portfolio, case study, or showreel."
+    },
+    {
+      "redLineId": "uncapped-indemnity",
+      "tier": "Severe",
+      "party": "Contractor",
+      "text": "9. Indemnity. Contractor shall indemnify Client against all losses arising from the Services, including losses caused by Client's own acts, with no limit on amount. Client shall tell Contractor of any claim within thirty (30) days.",
+      "sentence": "Contractor shall indemnify Client against all losses arising from the Services, including losses caused by Client's own acts, with no limit on amount."
+    },
+    {
+      "redLineId": "uncapped-indemnity",
+      "tier": "Moderate",
+      "party": "Contractor",
+      "text": "10. Liability. Contractor's total liability under this Agreement is limited to twice the fees paid, and Client's liability to Contractor is not limited.\n\nNeither Party excludes liability for fraud.",
+      "sentence": "Contractor's total liability under this Agreement is limited to twice the fees paid, and Client's liability to Contractor is not limited."
+    },
+    {
+      "redLineId": "uncapped-indemnity",
+      "tier": "Minor",
+      "party": "Contractor",
+      "text": "11. Mutual Indemnity. Each Party shall indemnify the other against third-party claims caused by its own gross negligence or wilful misconduct. Each Party's liability under this Section is limited to the fees paid under this Agreement.",
+      "sentence": "Each Party shall indemnify the other against third-party claims caused by its own gross negligence or wilful misconduct."
+    },
+    {
+      "redLineId": "non-compete",
+      "tier": "Severe",
+      "party": "Contractor",
+      "text": "12. Exclusivity. For two (2) years after this Agreement ends, Contractor shall not perform design services for any business other than Client. Contractor confirms that it has read this Section.",
+      "sentence": "For two (2) years after this Agreement ends, Contractor shall not perform design services for any business other than Client."
+    },
+    {
+      "redLineId": "non-compete",
+      "tier": "Moderate",
+      "party": "Contractor",
+      "text": "13. Customers. For twelve (12) months after this Agreement ends, Contractor shall not solicit any customer of Client for services similar to the Services.\n\nThis Section does not stop Contractor from answering a general advertisement.",
+      "sentence": "For twelve (12) months after this Agreement ends, Contractor shall not solicit any customer of Client for services similar to the Services."
+    },
+    {
+      "redLineId": "non-compete",
+      "tier": "Minor",
+      "party": "Contractor",
+      "text": "14. Staff. During the term of this Agreement, Contractor shall not hire or solicit any employee of Client. Contractor is free to work for other clients.",
+      "sentence": "During the term of this Agreement, Contractor shall not hire or solicit any employee of Client."
+    },
+    {
+      "redLineId": "discretionary-payment",
+      "tier": "Severe",
+      "party": "Contractor",
+      "text": "3. Payment. Client shall pay Contractor only after Client's own customer has paid Client for the related project. Contractor shall invoice Client monthly in arrears.",
+      "sentence": "Client shall pay Contractor only after Client's own customer has paid Client for the related project."
+    },
+    {
+      "redLineId": "discretionary-payment",
+      "tier": "Moderate",
+      "party": "Contractor",
+      "text": "3. Payment Terms. Contractor shall invoice Client at the end of each month. Client shall pay each invoice within sixty (60) days after receiving it.",
+      "sentence": "Client shall pay each invoice within sixty (60) days after receiving it."
+    },
+    {
+      "redLineId": "discretionary-payment",
+      "tier": "Minor",
+      "party": "Contractor",
+      "text": "3. Invoicing. Client accepts invoices only on the last Business Day of each calendar month.\n\nClient shall pay each accepted invoice within fourteen (14) days.",
+      "sentence": "Client accepts invoices only on the last Business Day of each calendar month."
+    },
+    {
+      "redLineId": "termination-without-pay",
+      "tier": "Severe",
+      "party": "Contractor",
+      "text": "8. Termination. Client may terminate this Agreement at any time, and on termination Client owes Contractor nothing for work in progress or delivered. Sections 5 and 9 survive termination.",
+      "sentence": "Client may terminate this Agreement at any time, and on termination Client owes Contractor nothing for work in progress or delivered."
+    },
+    {
+      "redLineId": "termination-without-pay",
+      "tier": "Moderate",
+      "party": "Contractor",
+      "text": "8. Ending the Agreement. Client may terminate this Agreement immediately without notice, and shall pay Contractor for Services performed up to the date of termination.\n\nContractor shall return Client's materials within five (5) days.",
+      "sentence": "Client may terminate this Agreement immediately without notice, and shall pay Contractor for Services performed up to the date of termination."
+    },
+    {
+      "redLineId": "termination-without-pay",
+      "tier": "Minor",
+      "party": "Contractor",
+      "text": "8. Notice of Termination. Either Party may terminate this Agreement on three (3) days' written notice. On termination Client shall pay for all Services performed to that date.",
+      "sentence": "Either Party may terminate this Agreement on three (3) days' written notice."
+    }
+  ],
+  "benign": {
+    "party": "Contractor",
+    "text": "2. Delivery. Contractor shall deliver the Deliverables described in the Statement of Work by the agreed dates. Client shall give Contractor the access and information Contractor reasonably needs to perform the Services.\n\n15. Notices. Notices under this Agreement must be in writing and sent to the addresses listed above."
+  }
+}

@@ -56,3 +56,14 @@ proposed default and alternatives. The run used whatever the env file holds, pin
 Fireworks provider with no fallbacks. **Recommended default: keep that model if the smoke run in
 BUILD-REPORT.md looks right.** Alternatives: any model Fireworks serves on OpenRouter that supports
 structured output (`require_parameters: true` refuses the call otherwise).
+
+## Q6. The six offered red lines have no "what matches" wording (2026-11-20)
+
+PRD section 5 gives each offered red line a name, a tier, and the reasoning behind it, but not a
+sentence that says what a clause has to say to match. The build copied the PRD word for word, so
+some descriptions sent to the model are reasoning ("No research data.", the FTC complaint count).
+They are off by default, so this only matters once a reader switches one on.
+
+- **A. Write a one-sentence "matches when" line for each of the six (recommended default)**, in
+  the style of the five defaults, and keep the PRD reasoning out of the prompt.
+- **B. Leave as is** and let readers edit the wording (ticket 09).
