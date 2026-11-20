@@ -1,22 +1,20 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { notFound, redirect } from "next/navigation";
-import { parseCheckedRedLines, parseStoredFlags, parseStoredReceipt } from "../../../lib/analysis/stored.ts";
+import { openStoredResult } from "../../../lib/documents/library.ts";
 import { findPartyCandidates } from "../../../lib/intake/parties.ts";
+import { supabaseLibraryTransport } from "../../../lib/server/library-store.ts";
 import { createSupabaseServerClient } from "../../../lib/supabase/server.ts";
 import { MastheadLinks, SIGNED_IN_LINKS } from "../../auth/masthead-links.tsx";
 import { DocumentResult } from "./document-result.tsx";
 
 export const metadata = { title: "Saved result · Redline" };
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-type DocumentRow = { id: string; title: string; stored_text: string; party: string };
-type AnalysisRow = { flags: unknown; receipt: unknown; red_lines_snapshot: unknown };
-
 /**
- * A stored document and its latest analysis, with "Change my party" (ticket 07), read under the reader's own session, so row-level
- * security decides what is visible. Anything not visible to this reader is a 404.
+ * A stored document and its latest analysis, exactly as stored and with no model call (story 48),
+ * with "Change my party", "Check again with my current red lines" and delete. Read under the
+ * reader's own session, so row-level security decides what is visible: anything this reader
+ * can't see is a 404, never a 403, so another reader's document is not shown to exist.
  */
 export default async function DocumentPage({ params }: { params: Promise<{ id: string }> }) {
   await connection(); // depends on the request: the session cookie
@@ -25,23 +23,9 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
   if (!supabase) redirect("/sign-in");
   const { data: auth, error: authError } = await supabase.auth.getUser();
   if (authError || !auth.user) redirect("/sign-in");
-  if (!UUID.test(id)) notFound();
 
-  const { data: document } = await supabase
-    .from("documents")
-    .select("id, title, stored_text, party")
-    .eq("id", id)
-    .maybeSingle<DocumentRow>();
-  if (!document) notFound();
-
-  const { data: analysis } = await supabase
-    .from("analyses")
-    .select("flags, receipt, red_lines_snapshot")
-    .eq("document_id", id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle<AnalysisRow>();
-  if (!analysis) notFound();
+  const stored = await openStoredResult(supabaseLibraryTransport(supabase), id);
+  if (!stored) notFound();
 
   return (
     <>
@@ -53,14 +37,14 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
       </header>
       <main className="check">
         <DocumentResult
-          documentId={document.id}
-          title={document.title}
-          storedText={document.stored_text}
-          candidates={findPartyCandidates(document.stored_text)}
-          party={document.party}
-          flags={parseStoredFlags(analysis.flags, document.stored_text)}
-          receipt={parseStoredReceipt(analysis.receipt, document.stored_text)}
-          checkedRedLines={parseCheckedRedLines(analysis.red_lines_snapshot)}
+          documentId={stored.id}
+          title={stored.title}
+          storedText={stored.storedText}
+          candidates={findPartyCandidates(stored.storedText)}
+          party={stored.party}
+          flags={stored.flags}
+          receipt={stored.receipt}
+          checkedRedLines={stored.checkedRedLines}
         />
         <p className="check-again">
           <Link href="/check" className="action">

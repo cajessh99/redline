@@ -12,7 +12,7 @@ export function requiresAccount(pathname: string): boolean {
   );
 }
 
-/** Where a signed-in reader lands instead of the landing page. Ticket 10 builds the library here. */
+/** Where a signed-in reader lands instead of the landing page: the library, which carries the upload action. */
 export const SIGNED_IN_HOME = "/library";
 
 export type RouteDecision = { kind: "continue" } | { kind: "redirect"; to: string };

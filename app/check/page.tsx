@@ -27,7 +27,7 @@ export default async function CheckPage() {
         )}
       </header>
       <main className="check">
-        <CheckFlow accountsOpen={supabaseConfig() !== null} />
+        <CheckFlow accountsOpen={supabaseConfig() !== null} signedIn={reader !== null} />
       </main>
     </>
   );

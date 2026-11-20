@@ -7,6 +7,8 @@ import type { CheckedRedLine } from "../../../lib/analysis/run.ts";
 import { ResultView } from "../../analysis/result-view.tsx";
 import { ChangeParty } from "../../check/change-party.tsx";
 import { postCheck } from "../../check/post-check.ts";
+import { DeleteDocument } from "./delete-document.tsx";
+import { RerunCurrent } from "./rerun-current.tsx";
 
 type Shown = { party: string; flags: Flag[]; receipt: ReceiptLine[]; checkedRedLines: CheckedRedLine[] };
 
@@ -18,15 +20,16 @@ type Props = Shown & {
 };
 
 /**
- * A saved document's latest result, with "Change my party". A rerun happens on the server against
- * the stored text; the new result replaces this one on screen and is what the page shows from now on.
+ * A saved document's latest result, with "Change my party", "Check again with my current red
+ * lines" and delete. A rerun happens on the server against the stored text; the new result
+ * replaces this one on screen and is what the page shows from now on.
  */
 export function DocumentResult({ documentId, title, storedText, candidates, ...initial }: Props) {
   const [shown, setShown] = useState<Shown>(initial);
   const router = useRouter();
 
-  async function rerun(party: string): Promise<string | null> {
-    const outcome = await postCheck(`/api/documents/${documentId}/party`, { party });
+  async function apply(url: string, body: Record<string, string>): Promise<string | null> {
+    const outcome = await postCheck(url, body);
     if (!outcome.ok) return outcome.message;
     const { party: newParty, flags, receipt, checkedRedLines } = outcome.result;
     setShown({ party: newParty, flags, receipt, checkedRedLines });
@@ -39,7 +42,12 @@ export function DocumentResult({ documentId, title, storedText, candidates, ...i
     <>
       <div className="check-intro">
         <h1 className="check-title">{title}</h1>
-        <ChangeParty candidates={candidates} currentParty={shown.party} rerun={rerun} />
+        <ChangeParty
+          candidates={candidates}
+          currentParty={shown.party}
+          rerun={(party) => apply(`/api/documents/${documentId}/party`, { party })}
+        />
+        <RerunCurrent rerun={() => apply(`/api/documents/${documentId}/rerun`, {})} />
       </div>
       <div className="check-sheet">
         <ResultView
@@ -50,6 +58,7 @@ export function DocumentResult({ documentId, title, storedText, candidates, ...i
           checkedRedLines={shown.checkedRedLines}
         />
       </div>
+      <DeleteDocument documentId={documentId} />
     </>
   );
 }

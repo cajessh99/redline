@@ -98,8 +98,21 @@ export async function rerunWithParty(documentId: string, body: unknown, deps: Re
   if (!isRecord(body)) return refuse(400, "bad_request");
   const checked = checkParty(body.party);
   if (!checked.ok) return refuse(400, checked.code);
-  const party = checked.party;
+  return rerunStored(documentId, checked.party, deps);
+}
 
+/**
+ * "Check again with my current red lines" (spec story 51): reruns the analysis of a stored document
+ * as the party stored with it, against `deps.redLines` (the reader's enabled red lines now), and
+ * stores a new analysis with its own snapshot. Earlier analyses are kept. The request carries
+ * nothing: neither the text nor the party can be changed this way.
+ */
+export async function rerunWithCurrentRedLines(documentId: string, deps: RerunDeps): Promise<RerunOutcome> {
+  return rerunStored(documentId, null, deps);
+}
+
+/** Reruns a stored document as `newParty`, or as its stored party when that is null. */
+async function rerunStored(documentId: string, newParty: string | null, deps: RerunDeps): Promise<RerunOutcome> {
   let document: StoredDocument | null;
   try {
     document = await deps.store.load(documentId);
@@ -108,6 +121,7 @@ export async function rerunWithParty(documentId: string, body: unknown, deps: Re
     return refuse(500, "load_failed");
   }
   if (!document) return refuse(404, "not_found");
+  const party = newParty ?? document.party;
 
   const snapshot = redLinesSnapshot(deps.redLines);
   if (snapshot.length === 0) return refuse(422, "no_red_lines");

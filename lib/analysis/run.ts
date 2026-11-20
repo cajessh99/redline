@@ -7,6 +7,7 @@
 
 import { normaliseText } from "../intake/normalise.ts";
 import { MAX_DOCUMENT_CHARS } from "../intake/text-file.ts";
+import { checkTitle, MAX_TITLE_CHARS, suggestTitle } from "../intake/title.ts";
 import type { RedLine } from "../red-lines/defaults.ts";
 import { NO_RED_LINES_MESSAGE } from "../red-lines/messages.ts";
 import { toRedLine } from "../red-lines/store.ts";
@@ -15,9 +16,6 @@ import type { ModelClient } from "./model.ts";
 
 /** The longest party name accepted, in characters. A role is a word or two. */
 export const MAX_PARTY_CHARS = 120;
-
-/** The longest document title taken from the text. Ticket 10 lets the reader set their own. */
-export const MAX_TITLE_CHARS = 80;
 
 /** What is stored for one successful analysis. Written together or not at all. */
 export type AnalysisRecord = {
@@ -50,6 +48,8 @@ export type RunErrorCode =
   | "not_normalised"
   | "missing_party"
   | "party_too_long"
+  | "missing_title"
+  | "title_too_long"
   | "no_red_lines"
   | "red_lines_unavailable"
   | "model_unavailable"
@@ -108,6 +108,8 @@ export const RUN_ERROR_MESSAGES: Record<RunErrorCode, string> = {
     "The text Redline received doesn't match the text you were shown, so it hasn't checked it. Reload the page and try again.",
   missing_party: "Pick or type your party before Redline checks the contract.",
   party_too_long: `Keep your party to ${MAX_PARTY_CHARS} characters or fewer.`,
+  missing_title: "Give the contract a title so you can find it in your library.",
+  title_too_long: `Keep the title to ${MAX_TITLE_CHARS} characters or fewer.`,
   no_red_lines: NO_RED_LINES_MESSAGE,
   red_lines_unavailable:
     "Redline couldn't load your red lines, so it hasn't checked this contract. Nothing was saved. Try again in a minute.",
@@ -135,11 +137,16 @@ export function checkParty(
   return { ok: true, party: trimmed };
 }
 
-/** The document's title for now: its first line, cut to MAX_TITLE_CHARS. */
-export function titleFromText(text: string): string {
-  const firstLine = text.split("\n", 1)[0].trim();
-  if (firstLine.length <= MAX_TITLE_CHARS) return firstLine;
-  return firstLine.slice(0, MAX_TITLE_CHARS).trimEnd();
+/**
+ * The title to store: the reader's own when the request carries one (checked, never cut or filled
+ * in), otherwise the one suggested from the text.
+ */
+export function titleFor(
+  title: unknown,
+  text: string,
+): { ok: true; title: string } | { ok: false; code: "missing_title" | "title_too_long" | "bad_request" } {
+  if (title === undefined || title === null) return { ok: true, title: suggestTitle(text) };
+  return checkTitle(title);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -152,7 +159,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  */
 export async function runAnalysis(body: unknown, deps: RunDeps): Promise<RunOutcome> {
   if (!isRecord(body)) return refuse(400, "bad_request");
-  const { text, party } = body;
+  const { text, party, title: requestedTitle } = body;
   if (typeof text !== "string" || typeof party !== "string") {
     if (typeof text === "string" && party === undefined) return refuse(400, "missing_party");
     return refuse(400, "bad_request");
@@ -168,6 +175,10 @@ export async function runAnalysis(body: unknown, deps: RunDeps): Promise<RunOutc
   if (!checkedParty.ok) return refuse(400, checkedParty.code);
   const readerParty = checkedParty.party;
 
+  const checkedTitle = titleFor(requestedTitle, text);
+  if (!checkedTitle.ok) return refuse(400, checkedTitle.code);
+  const title = checkedTitle.title;
+
   // With nothing switched on there is nothing to check. analyse() would return an empty result
   // without calling the model, which would read as a clean receipt, so refuse here instead.
   const snapshot = redLinesSnapshot(deps.redLines);
@@ -180,8 +191,6 @@ export async function runAnalysis(body: unknown, deps: RunDeps): Promise<RunOutc
     deps.log?.(`analysis failed (${result.error.kind}): ${result.error.message}`);
     return refuse(502, "analysis_failed");
   }
-
-  const title = titleFromText(text);
 
   let saved: SavedState = { kind: "not_kept" };
   if (deps.store) {

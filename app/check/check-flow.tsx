@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useId, useRef, useState, type FormEvent } from "react";
-import type { SavedState } from "../../lib/analysis/run.ts";
+import { RUN_ERROR_MESSAGES, type SavedState } from "../../lib/analysis/run.ts";
 import { findPartyCandidates } from "../../lib/intake/parties.ts";
 import { CONTRACT_FILE_ACCEPT } from "../../lib/intake/formats.ts";
 import { INTAKE_REFUSAL_MESSAGES, normalisePastedText } from "../../lib/intake/text-file.ts";
+import { checkTitle, MAX_TITLE_CHARS, suggestTitle } from "../../lib/intake/title.ts";
 import { CheckError } from "../analysis/check-error.tsx";
 import { ResultView } from "../analysis/result-view.tsx";
 import { ChangeParty } from "./change-party.tsx";
@@ -30,7 +31,16 @@ type Stage =
     }
   | { kind: "result"; text: string; candidates: string[]; result: CheckResult };
 
-type Props = { accountsOpen: boolean };
+type Props = {
+  accountsOpen: boolean;
+  /** Signed in, the result is stored, so the reader names it first (story 5). Signed out, nothing is stored and no title is asked for. */
+  signedIn?: boolean;
+};
+
+export const TITLE_FIELD_COPY = {
+  label: "Title",
+  hint: "Your library lists the contract under this title.",
+} as const;
 
 /**
  * Loads the file readers (and, through them, the PDF and Word parsers) only when a file is chosen.
@@ -44,21 +54,25 @@ function loadFileReader() {
 }
 
 /** Choose or paste, see the text, pick or type your party, check, then the result. */
-export function CheckFlow({ accountsOpen }: Props) {
+export function CheckFlow({ accountsOpen, signedIn = false }: Props) {
   const [stage, setStage] = useState<Stage>({ kind: "intake", refusal: null, reading: null });
   const [pasted, setPasted] = useState("");
   const [choice, setChoice] = useState<PartyChoice>(NO_PARTY);
   const [partyError, setPartyError] = useState<PartyProblem | null>(null);
+  const [title, setTitle] = useState("");
+  const [titleError, setTitleError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   /** Counts file choices, so a slow read that a newer choice replaced is ignored. */
   const readCount = useRef(0);
-  const ids = { file: useId(), paste: useId(), party: useId() };
+  const ids = { file: useId(), paste: useId(), party: useId(), title: useId() };
 
   function showPreview(text: string, source: "file" | "paste") {
     const candidates = findPartyCandidates(text);
     setStage({ kind: "preview", text, candidates, source, error: null, running: false });
     setChoice(NO_PARTY);
     setPartyError(null);
+    setTitle(suggestTitle(text));
+    setTitleError(null);
   }
 
   function refuse(message: string) {
@@ -97,6 +111,17 @@ export function CheckFlow({ accountsOpen }: Props) {
   async function analyse(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (stage.kind !== "preview" || stage.running) return;
+    let checkedTitle: string | null = null;
+    if (signedIn) {
+      const titleCheck = checkTitle(title);
+      if (!titleCheck.ok) {
+        setTitleError(RUN_ERROR_MESSAGES[titleCheck.code]);
+        document.getElementById(ids.title)?.focus();
+        return;
+      }
+      setTitleError(null);
+      checkedTitle = titleCheck.title;
+    }
     const problem = partyProblem(choice, stage.candidates);
     if (problem) {
       setPartyError(problem);
@@ -108,7 +133,10 @@ export function CheckFlow({ accountsOpen }: Props) {
     const { text, candidates, source } = stage;
     setStage({ ...stage, error: null, running: true });
 
-    const outcome = await postCheck("/api/analyse", { text, party });
+    const outcome = await postCheck(
+      "/api/analyse",
+      checkedTitle === null ? { text, party } : { text, party, title: checkedTitle },
+    );
     if (!outcome.ok) {
       setStage({ kind: "preview", text, candidates, source, error: outcome.message, running: false });
       return;
@@ -182,6 +210,34 @@ export function CheckFlow({ accountsOpen }: Props) {
 
           <form className="check-form" onSubmit={analyse} noValidate>
             {stage.error ? <CheckError message={stage.error} /> : null}
+            {signedIn ? (
+              <div className="field">
+                <label htmlFor={ids.title}>{TITLE_FIELD_COPY.label}</label>
+                <input
+                  id={ids.title}
+                  type="text"
+                  name="title"
+                  value={title}
+                  maxLength={MAX_TITLE_CHARS}
+                  autoComplete="off"
+                  disabled={stage.running}
+                  aria-invalid={titleError ? true : undefined}
+                  aria-describedby={titleError ? `${ids.title}-hint ${ids.title}-error` : `${ids.title}-hint`}
+                  onChange={(e) => {
+                    setTitle(e.target.value);
+                    if (titleError && checkTitle(e.target.value).ok) setTitleError(null);
+                  }}
+                />
+                <p id={`${ids.title}-hint`} className="field-hint">
+                  {TITLE_FIELD_COPY.hint}
+                </p>
+                {titleError ? (
+                  <p id={`${ids.title}-error`} className="field-error">
+                    {titleError}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
             <PartyPicker
               idBase={ids.party}
               candidates={stage.candidates}

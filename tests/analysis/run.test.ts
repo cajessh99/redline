@@ -4,14 +4,13 @@
 import { describe, expect, it } from "vitest";
 import { verifySourceSentence } from "../../lib/analysis/verify.ts";
 import {
-  MAX_TITLE_CHARS,
   runAnalysis,
-  titleFromText,
   type AnalysisRecord,
   type AnalysisStore,
   type RunOutcome,
 } from "../../lib/analysis/run.ts";
 import { MAX_DOCUMENT_CHARS } from "../../lib/intake/text-file.ts";
+import { MAX_TITLE_CHARS, suggestTitle } from "../../lib/intake/title.ts";
 import { DEFAULT_RED_LINE_IDS, defaultEnabledRedLines } from "../../lib/red-lines/defaults.ts";
 import { FakeModel, fakeModel, loadContract, sidecarPayload } from "../support/fake-model.ts";
 
@@ -52,7 +51,8 @@ describe("runAnalysis", () => {
     const record = store.saved[0];
     expect(record.storedText).toBe(text);
     expect(record.party).toBe("Contractor");
-    expect(record.title).toBe("INDEPENDENT CONTRACTOR SERVICES AGREEMENT");
+    expect(record.title).toBe(suggestTitle(text));
+    expect(outcome.title).toBe(record.title);
     expect(record.flags).toEqual(outcome.flags);
     expect(outcome.receipt).toEqual([
       {
@@ -148,14 +148,45 @@ describe("runAnalysis", () => {
   }
 });
 
-describe("titleFromText", () => {
-  it("takes the first line", () => {
-    expect(titleFromText("Lease Agreement\n\nThis lease is made")).toBe("Lease Agreement");
+describe("runAnalysis with a title (story 5)", () => {
+  it("stores the reader's title, trimmed, instead of the suggested one", async () => {
+    const store = new MemoryStore();
+    const model = fakeModel(sidecarPayload(sidecar));
+    const outcome = okOf(
+      await runAnalysis({ text, party: "Contractor", title: "  Quillmont   data work, March  " }, { model, store, redLines }),
+    );
+    expect(outcome.title).toBe("Quillmont data work, March");
+    expect(store.saved[0].title).toBe("Quillmont data work, March");
   });
 
-  it("cuts a long first line to the limit", () => {
-    const title = titleFromText(`${"word ".repeat(40)}\n\nmore`);
-    expect(title.length).toBeLessThanOrEqual(MAX_TITLE_CHARS);
-    expect(title.endsWith(" ")).toBe(false);
+  it("falls back to the suggested title when the request carries none", async () => {
+    const store = new MemoryStore();
+    const outcome = okOf(await runAnalysis({ text, party: "Contractor" }, { model: fakeModel(sidecarPayload(sidecar)), store, redLines }));
+    expect(outcome.title).toBe("Independent Contractor Services Agreement: Quillmont Analytics LLC and Rowan Tellisford");
+    expect(store.saved[0].title).toBe(outcome.title);
+  });
+
+  for (const [title, code] of [
+    ["", "missing_title"],
+    ["   \n ", "missing_title"],
+    ["x".repeat(MAX_TITLE_CHARS + 1), "title_too_long"],
+    [42, "bad_request"],
+  ] as const) {
+    it(`refuses the title ${JSON.stringify(title).slice(0, 20)} with ${code}, before any model call, storing nothing`, async () => {
+      const store = new MemoryStore();
+      const model = new FakeModel([]);
+      const outcome = await runAnalysis({ text, party: "Contractor", title }, { model, store, redLines });
+      expect(outcome).toMatchObject({ ok: false, status: 400, error: { code } });
+      expect(model.calls).toHaveLength(0);
+      expect(store.saved).toHaveLength(0);
+    });
+  }
+
+  it("accepts a title exactly at the limit", async () => {
+    const store = new MemoryStore();
+    const title = "y".repeat(MAX_TITLE_CHARS);
+    const outcome = okOf(await runAnalysis({ text, party: "Contractor", title }, { model: fakeModel(sidecarPayload(sidecar)), store, redLines }));
+    expect(store.saved[0].title).toBe(title);
+    expect(outcome.title).toBe(title);
   });
 });
