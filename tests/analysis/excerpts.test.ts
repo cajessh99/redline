@@ -56,6 +56,6 @@ describe("analyse on each excerpt", () => {
       { text: benign.text, party: benign.party, redLines: defaultEnabledRedLines() },
       { model },
     );
-    expect(result).toEqual({ ok: true, flags: [], checkedRedLineIds: [...DEFAULT_RED_LINE_IDS] });
+    expect(result).toMatchObject({ ok: true, flags: [], checkedRedLineIds: [...DEFAULT_RED_LINE_IDS] });
   });
 });

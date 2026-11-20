@@ -116,7 +116,7 @@ describe("analyse: verified flags from the fixture contract", () => {
   it("yields no flags on the benign contract when the model returns no matches", async () => {
     const model = fakeModel(sidecarPayload(benign.sidecar));
     const result = await run(model, redLines, benign.text);
-    expect(result).toEqual({ ok: true, flags: [], checkedRedLineIds: [...DEFAULT_RED_LINE_IDS] });
+    expect(result).toMatchObject({ ok: true, flags: [], checkedRedLineIds: [...DEFAULT_RED_LINE_IDS] });
     expect(model.calls).toHaveLength(1);
   });
 
@@ -164,9 +164,17 @@ describe("analyse: misquotes are regenerated once, then dropped", () => {
         candidateFromSidecar(ipSevere, { sourceSentence: ipSevere.sentence.toUpperCase() }),
       ]),
     );
-    const flags = flagsOf(await run(model));
+    const result = await run(model);
+    const flags = flagsOf(result);
     expect(model.calls).toHaveLength(2);
     expect(flags).toHaveLength(6);
+    expect(result.ok && result.diagnostics).toEqual({
+      candidates: 7,
+      verifiedFirstPass: 6,
+      regenerated: 1,
+      verifiedAfterRegeneration: 0,
+      dropped: 1,
+    });
     expect(flags.some((f) => f.redLineId === "ip-assignment" && f.tier === "Severe")).toBe(false);
     expect(flags.some((f) => f.redLineId === "ip-assignment" && f.tier === "Minor")).toBe(true);
     expectEveryFlagCitesTheText(text, flags);
@@ -256,7 +264,7 @@ describe("analyse: the enabled red lines are the whole rulebook", () => {
 
   it("makes no model call when no red line is enabled", async () => {
     const model = new FakeModel([]);
-    expect(await run(model, [])).toEqual({ ok: true, flags: [], checkedRedLineIds: [] });
+    expect(await run(model, [])).toMatchObject({ ok: true, flags: [], checkedRedLineIds: [] });
     expect(model.calls).toHaveLength(0);
   });
 });

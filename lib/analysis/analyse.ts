@@ -43,8 +43,24 @@ export type AnalysisErrorKind = "model_failed" | "malformed_output";
 
 export type AnalysisError = { kind: AnalysisErrorKind; message: string };
 
+/**
+ * Counts from one run, for the smoke script and logs. Never shown to readers.
+ * - candidates: first-pass candidates for enabled red lines.
+ * - verifiedFirstPass: of those, how many passed the source and banned-word checks.
+ * - regenerated: first-pass candidates that failed and were sent back once.
+ * - verifiedAfterRegeneration: regenerated candidates that passed on the second try.
+ * - dropped: failures not recovered by regeneration (regenerated - verifiedAfterRegeneration, min 0).
+ */
+export type AnalysisDiagnostics = {
+  candidates: number;
+  verifiedFirstPass: number;
+  regenerated: number;
+  verifiedAfterRegeneration: number;
+  dropped: number;
+};
+
 export type AnalysisResult =
-  | { ok: true; flags: Flag[]; checkedRedLineIds: string[] }
+  | { ok: true; flags: Flag[]; checkedRedLineIds: string[]; diagnostics: AnalysisDiagnostics }
   | { ok: false; error: AnalysisError };
 
 // ---------------------------------------------------------------------------------------------
@@ -354,7 +370,14 @@ export async function analyse(input: AnalysisInput, deps: AnalysisDeps): Promise
   }
   const redLines = [...enabled.values()];
   const checkedRedLineIds = redLines.map((redLine) => redLine.id);
-  if (redLines.length === 0) return { ok: true, flags: [], checkedRedLineIds };
+  const diagnostics: AnalysisDiagnostics = {
+    candidates: 0,
+    verifiedFirstPass: 0,
+    regenerated: 0,
+    verifiedAfterRegeneration: 0,
+    dropped: 0,
+  };
+  if (redLines.length === 0) return { ok: true, flags: [], checkedRedLineIds, diagnostics };
 
   const first = await callModel(
     deps.model,
@@ -374,13 +397,17 @@ export async function analyse(input: AnalysisInput, deps: AnalysisDeps): Promise
     const redLine = enabled.get(entry.redLineId);
     if (!redLine) continue;
     for (const candidate of entry.matches) {
+      diagnostics.candidates++;
       const outcome = checkCandidate(input.text, redLine, candidate);
-      if (outcome.ok) flags.push(outcome.flag);
-      else failures.push(outcome.failure);
+      if (outcome.ok) {
+        flags.push(outcome.flag);
+        diagnostics.verifiedFirstPass++;
+      } else failures.push(outcome.failure);
     }
   }
 
   if (failures.length > 0) {
+    diagnostics.regenerated = failures.length;
     const failedIds = [...new Set(failures.map((failure) => failure.redLineId))];
     const failedRedLines = failedIds.map((id) => enabled.get(id) as RedLine);
     const second = await callModel(
@@ -400,10 +427,14 @@ export async function analyse(input: AnalysisInput, deps: AnalysisDeps): Promise
       const redLine = enabled.get(entry.redLineId) as RedLine;
       for (const candidate of entry.matches) {
         const outcome = checkCandidate(input.text, redLine, candidate);
-        if (outcome.ok) flags.push(outcome.flag);
+        if (outcome.ok) {
+          flags.push(outcome.flag);
+          diagnostics.verifiedAfterRegeneration++;
+        }
       }
     }
+    diagnostics.dropped = Math.max(0, diagnostics.regenerated - diagnostics.verifiedAfterRegeneration);
   }
 
-  return { ok: true, flags: orderFlags(flags, checkedRedLineIds), checkedRedLineIds };
+  return { ok: true, flags: orderFlags(flags, checkedRedLineIds), checkedRedLineIds, diagnostics };
 }

@@ -819,3 +819,348 @@ button.action:disabled {
     transition: none !important;
   }
 }
+
+/* The check flow and the result view: the desk, sheets of paper on it, plain familiar forms */
+
+.check {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(28px, 6vh, 72px) var(--gutter) clamp(56px, 8vw, 112px);
+}
+
+.check-intro {
+  max-width: 46rem;
+  margin-bottom: clamp(20px, 3vw, 36px);
+}
+
+h1.check-title {
+  font-weight: 700;
+  font-size: clamp(1.85rem, 3vw, 2.75rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.check-lead {
+  margin: 0.9rem 0 0;
+  max-width: 34rem;
+}
+
+.check-sheet {
+  max-width: 52rem;
+  background: var(--paper);
+  box-shadow: var(--paper-shadow);
+  padding: var(--sheet-pad);
+}
+
+.check-intake {
+  max-width: 40rem;
+  display: grid;
+  gap: 1.8rem;
+}
+
+.check-intake > .account-error {
+  margin: 0;
+}
+
+.file-input {
+  font: inherit;
+  max-width: 100%;
+}
+
+.file-input::file-selector-button {
+  margin-right: 0.9rem;
+  min-height: 44px;
+  padding: 0 1.1rem;
+  background: var(--paper-bright);
+  color: var(--toner);
+  border: 1.5px solid var(--toner);
+  border-radius: 2px;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.paste-form {
+  display: grid;
+  gap: 1rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--rule);
+}
+
+.field textarea {
+  width: 100%;
+  min-height: 10rem;
+  padding: 0.7rem 0.85rem;
+  background: var(--paper-bright);
+  color: var(--toner);
+  border: 1px solid var(--toner-soft);
+  border-radius: 2px;
+  font: inherit;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.field textarea:focus-visible {
+  outline-offset: 1px;
+}
+
+.action.action-secondary {
+  justify-self: start;
+  min-height: 48px;
+  padding: 0 22px;
+  font-size: 1.0625rem;
+  background: transparent;
+  color: var(--toner);
+  box-shadow: inset 0 0 0 1.5px var(--toner);
+}
+
+/* Only paper and the primary action float; the secondary button stays flat on the sheet. */
+.action.action-secondary:hover {
+  background: var(--paper-bright);
+  transform: none;
+  box-shadow: inset 0 0 0 2.5px var(--toner);
+}
+
+.check-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+  gap: clamp(20px, 3vw, 48px);
+  align-items: start;
+}
+
+.text-preview {
+  max-height: min(70vh, 44rem);
+  overflow-y: auto;
+  background: var(--paper);
+  box-shadow: var(--paper-shadow);
+  padding: var(--sheet-pad);
+  font-family: var(--serif);
+  font-size: clamp(0.98rem, 1.15vw, 1.0625rem);
+  line-height: 1.62;
+  overflow-wrap: anywhere;
+}
+
+.text-preview p {
+  margin: 0 0 0.9em;
+}
+
+.text-preview p:last-child {
+  margin-bottom: 0;
+}
+
+.check-form {
+  display: grid;
+  gap: 1.15rem;
+  background: var(--paper);
+  box-shadow: var(--paper-shadow);
+  padding: var(--sheet-pad);
+}
+
+.check-form .account-error {
+  margin: 0;
+}
+
+.check-form .action {
+  justify-self: start;
+}
+
+.field-hint {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--toner-soft);
+}
+
+.field-error {
+  margin: 0.2rem 0 0;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--toner);
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.field input[aria-invalid="true"] {
+  border: 2px solid var(--toner);
+}
+
+.check-status {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.check-status:empty {
+  display: none;
+}
+
+.quiet-button {
+  justify-self: start;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: underline;
+  text-underline-offset: 0.22em;
+  text-decoration-thickness: 1.5px;
+  cursor: pointer;
+}
+
+.quiet-button:hover {
+  text-decoration-thickness: 2.5px;
+}
+
+.quiet-button:disabled {
+  cursor: default;
+  color: var(--toner-soft);
+}
+
+.saved-line {
+  margin: 0.9rem 0 0;
+  max-width: 40rem;
+}
+
+.result-view h2 {
+  font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+  margin-bottom: 0.4rem;
+}
+
+.result-meta {
+  margin: 0 0 1.4rem;
+  color: var(--toner-soft);
+}
+
+.result-meta strong {
+  color: var(--toner);
+}
+
+.flag-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+/* A flag is a slip in its tier's wash; the stamp carries the tier word. */
+.flag {
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.flag[data-tier="severe"] { background: var(--severe-wash); }
+.flag[data-tier="moderate"] { background: var(--moderate-wash); }
+.flag[data-tier="minor"] { background: var(--minor-wash); }
+
+h3.flag-line {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+.flag-statement {
+  margin: 0 0 0.9rem;
+  font-size: 1.0625rem;
+  font-weight: 500;
+  max-width: 40rem;
+}
+
+.flag-source {
+  margin: 0;
+  padding: 0;
+  font-family: var(--serif);
+  font-size: 1rem;
+  line-height: 1.55;
+  user-select: text;
+  overflow-wrap: anywhere;
+}
+
+.flag-source p {
+  margin: 0;
+}
+
+.flag-source p::before { content: "\201C"; }
+.flag-source p::after { content: "\201D"; }
+
+.result-empty {
+  margin: 0;
+  padding: 1rem 0;
+  font-weight: 600;
+}
+
+h3.checked-heading {
+  margin: 2rem 0 0.2rem;
+}
+
+.checked-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checked-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.4rem 1.2rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.checked-list li:last-child {
+  border-bottom: 0;
+}
+
+.checked-title {
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.checked-count {
+  flex: none;
+  color: var(--toner-soft);
+  font-size: 0.9375rem;
+}
+
+.proof-statement {
+  margin: 1.8rem 0 0;
+  max-width: 42rem;
+}
+
+.result-legal {
+  margin: 1rem 0 0;
+}
+
+.check-again {
+  margin: clamp(24px, 4vw, 40px) 0 0;
+}
+
+@media (max-width: 900px) {
+  .check-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .text-preview {
+    max-height: 55vh;
+  }
+}
+
+@media (max-width: 560px) {
+  .checked-list li {
+    flex-direction: column;
+  }
+
+  .check-sheet,
+  .check-form,
+  .text-preview {
+    padding: 18px 16px;
+  }
+
+  .flag {
+    margin: 0 -6px;
+    padding: 0.9rem 0.85rem 1rem;
+  }
+}
