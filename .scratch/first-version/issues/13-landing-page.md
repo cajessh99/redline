@@ -4,17 +4,17 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** done (2026-11-20; Vercel deploy not verified)
 
-- [ ] A visitor at the root URL sees the landing page, with sign-up and sign-in actions that both work
-- [ ] A signed-in reader at the root URL is sent to a placeholder signed-in page, never the landing page
-- [ ] The page names the four accepted document types and says that terms of service and scanned documents are not accepted
-- [ ] The page says that every flag shows the exact sentence it came from, and makes no other claim the product cannot back
-- [ ] The page says Redline is not legal advice and makes no claim about the law where the reader lives
-- [ ] No testimonials, customer or user counts, accuracy figures, or pricing appear (none exist; PRODUCT.md, Evidence on Hand)
-- [ ] The copy uses no word on the banned-word list in PRODUCT.md (Brand Commitments)
-- [ ] Every line of copy has been run through the humanizer skill before commit (CLAUDE.md, Copy)
-- [ ] No analytics, tracking, or cookies are added in this ticket
-- [ ] The page works at phone width and on a laptop, with no horizontal scroll, and meets WCAG 2.2 AA
-- [ ] Tested: a visitor's request gets the landing page; a signed-in request gets the placeholder; the rendered copy contains no banned word
-- [ ] The build is green and the page deploys to Vercel
+- [x] A visitor at the root URL sees the landing page, with sign-up and sign-in actions that both work
+- [x] A signed-in reader at the root URL is sent to a placeholder signed-in page, never the landing page (tested as a pure routing function; no live session available)
+- [x] The page names the four accepted document types and says that terms of service and scanned documents are not accepted
+- [x] The page says that every flag shows the exact sentence it came from, and makes no other claim the product cannot back
+- [x] The page says Redline is not legal advice and makes no claim about the law where the reader lives
+- [x] No testimonials, customer or user counts, accuracy figures, or pricing appear (none exist; PRODUCT.md, Evidence on Hand)
+- [x] The copy uses no word on the banned-word list in PRODUCT.md (Brand Commitments)
+- [x] Every line of copy has been run through the humanizer skill before commit (CLAUDE.md, Copy)
+- [x] No analytics, tracking, or cookies are added in this ticket
+- [x] The page works at phone width and on a laptop, with no horizontal scroll, and meets WCAG 2.2 AA
+- [x] Tested: a visitor's request gets the landing page; a signed-in request gets the placeholder; the rendered copy contains no banned word
+- [ ] The build is green and the page deploys to Vercel (build green locally; no Vercel access in this run)

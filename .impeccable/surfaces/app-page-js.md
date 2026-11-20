@@ -16,7 +16,7 @@ Ticket 13; PRD section 3 item 9; spec stories 64–69; CONTEXT.md D11.
 - Job: decide in seconds whether Redline will read their contract and whether they can trust what
   it says.
 - One action: **Check a contract**, which leads to sign-up. Sign-in is a quiet header link for
-  returning readers, not a second action. Until ticket 01 ships auth, both go to a placeholder.
+  returning readers, not a second action. They go to `/sign-up` and `/sign-in` (ticket 01).
 
 ## Proof and content
 - Demonstrated, not claimed: a synthetic client contract, labelled as a sample, turning into
@@ -30,7 +30,8 @@ Ticket 13; PRD section 3 item 9; spec stories 64–69; CONTEXT.md D11.
 - Never: prices, customers, testimonials, counts, accuracy figures. Banned words per PRODUCT.md.
 
 ## Unresolved
-- Signed-in redirect to the library waits on ticket 01 (auth) and ticket 10 (library).
+- The proxy sends a signed-in reader at the root to `/library` (ticket 13). Until ticket 10 builds
+  the library, that is a placeholder signed-in page.
 - Analytics are ticket 14, not this build.
 
 ## Direction contract
