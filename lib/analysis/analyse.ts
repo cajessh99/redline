@@ -235,7 +235,8 @@ function regenerationSchema(failureIds: string[], addressingIds: string[]): Json
 const ADDRESSING_RULE =
   "addressingSentence is one sentence copied verbatim from the document, character for character, that deals with the red line's subject, or null when no sentence in the document deals with it. Never invent or tidy a sentence; when in doubt, use null.";
 
-function systemPrompt(): string {
+function systemPrompt(party: string): string {
+  const reader = JSON.stringify(party);
   return [
     "You read a contract for one party to it, called the reader's party, and find clauses that match the reader's red lines.",
     "The red lines you are given are the whole rulebook. Match nothing that is not described by one of them, and flag only clauses that work against the reader's party.",
@@ -244,7 +245,7 @@ function systemPrompt(): string {
     "- tier is one of the tiers the red line describes: Severe, Moderate or Minor.",
     "- sourceSentence is one sentence copied verbatim from the document, character for character, with the same punctuation, quotation marks, capitalisation and spacing. Do not paraphrase, shorten, join or tidy it.",
     "- statement is one plain declarative sentence saying what the clause does to the reader's party. No hedging. Never use these words: safe, standard, normal, unusual, clean, no issues, might, may, could possibly.",
-    "- counterOffer is replacement wording for that sentence, written from the reader's party's side. It asserts nothing the sentence does not support.",
+    `- counterOffer is replacement wording for that one sentence only, for ${reader} to propose, changing the sentence in ${reader}'s favour. It states no fact about the parties, the law or the market that the sentence does not contain, and never says anything is normal, standard, customary or required by law. Use a number only in place of a number in the sentence (proposing 30 days instead of 75 days is fine).`,
     `For every red line, whether or not it has a match, also give addressingSentence. ${ADDRESSING_RULE}`,
     "Never judge whether a clause is normal, standard or common, and make no legal claims. State only what the document says.",
     "Answer with JSON that follows the schema.",
@@ -533,7 +534,7 @@ export async function analyse(input: AnalysisInput, deps: AnalysisDeps): Promise
   const first = await callModel(
     deps.model,
     {
-      system: systemPrompt(),
+      system: systemPrompt(input.party),
       user: userPrompt(input, redLines),
       schemaName: "redline_analysis",
       jsonSchema: analysisSchema(checkedRedLineIds),
@@ -595,7 +596,7 @@ export async function analyse(input: AnalysisInput, deps: AnalysisDeps): Promise
     const second = await callModel(
       deps.model,
       {
-        system: systemPrompt(),
+        system: systemPrompt(input.party),
         user: regenerationPrompt(
           input,
           redLines.filter((redLine) => involved.has(redLine.id)),

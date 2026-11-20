@@ -4,11 +4,11 @@
 
 **Blocked by:** 03
 
-**Status:** ready-for-agent
+**Status:** done (2026-11-20)
 
-- [ ] Every flag shown has a counter-offer, produced in the same analysis call
-- [ ] The counter-offer proposes replacement wording for the cited sentence and asserts nothing the cited text does not support: no claims about the parties, the law, or the market
-- [ ] The counter-offer is written from the reader's chosen party's side
-- [ ] One action copies the counter-offer to the clipboard
-- [ ] Counter-offers are stored with the analysis
-- [ ] A flag whose counter-offer is missing from model output is handled the same way as malformed output (no partial result)
+- [x] Every flag shown has a counter-offer, produced in the same analysis call
+- [x] The counter-offer proposes replacement wording for the cited sentence and asserts nothing the cited text does not support: no claims about the parties, the law, or the market
+- [x] The counter-offer is written from the reader's chosen party's side
+- [x] One action copies the counter-offer to the clipboard
+- [x] Counter-offers are stored with the analysis
+- [x] A flag whose counter-offer is missing from model output is handled the same way as malformed output (no partial result)

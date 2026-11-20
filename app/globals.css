@@ -1085,6 +1085,69 @@ h3.flag-line {
 .flag-source p::before { content: "\201C"; }
 .flag-source p::after { content: "\201D"; }
 
+/* The counter-offer: Redline's drafted wording, so serif like the contract but not in quotation
+   marks. Selectable, so it can be copied by hand when the clipboard is refused. */
+.flag-counter-label {
+  margin-top: 1rem;
+}
+
+.flag-counter {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1rem;
+  line-height: 1.55;
+  max-width: 44rem;
+  user-select: text;
+  overflow-wrap: anywhere;
+}
+
+.copy-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1rem;
+  margin-top: 0.75rem;
+}
+
+/* Flat on the slip, outlined in toner: a secondary action, sized for touch. */
+.copy-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  background: transparent;
+  color: var(--toner);
+  border: 0;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1.5px var(--toner);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-button:hover {
+  background: var(--paper-bright);
+  box-shadow: inset 0 0 0 2.5px var(--toner);
+}
+
+.copy-status {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  flex: 1 1 14rem;
+}
+
+/* The live region stays in the layout even when empty, so screen readers keep watching it. */
+
+.result-meta:has(+ .result-hint) {
+  margin-bottom: 0.4rem;
+}
+
+.result-hint {
+  max-width: 40rem;
+}
+
 .result-empty {
   margin: 0;
   padding: 1rem 0;

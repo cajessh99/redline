@@ -8,9 +8,11 @@ import {
   DOES_NOT_MENTION,
   LEGAL_STATEMENT,
   PROOF_STATEMENT,
+  COUNTER_OFFER_HINT,
   RESULT_UNAVAILABLE,
   ResultView,
 } from "../../app/analysis/result-view.tsx";
+import { COPIED_MESSAGE, COPY_FAILED_MESSAGE, COPY_LABEL } from "../../app/analysis/copy-button.tsx";
 import { CheckFlow } from "../../app/check/check-flow.tsx";
 import { analyse, type Flag, type ReceiptLine } from "../../lib/analysis/analyse.ts";
 import { RUN_ERROR_MESSAGES } from "../../lib/analysis/run.ts";
@@ -100,6 +102,41 @@ describe("ResultView", () => {
     expect([...html.matchAll(/<li class="flag"/g)]).toHaveLength(rest.length - 1);
   });
 
+  it("shows every flag's counter-offer verbatim from the sidecar, after its source, with a labelled copy button", async () => {
+    const flags = await analysedFlags();
+    const html = render(flags);
+    const items = [...html.matchAll(/<li class="flag" data-tier="\w+">([\s\S]*?)<\/li>/g)].map((m) => decode(m[1]));
+    expect(items).toHaveLength(sidecar.flags.length);
+    expect(readerText(html)).toContain(COUNTER_OFFER_HINT);
+
+    for (const planted of sidecar.flags) {
+      const body = items.find((item) => item.includes(`<p>${planted.sentence}</p>`));
+      expect(body, planted.sentence).toBeDefined();
+      const counter = body!.match(/<p class="flag-counter" id="([^"]+)">([\s\S]*?)<\/p>/);
+      expect(counter?.[2]).toBe(planted.counterOffer);
+      expect(body!.indexOf("Counter-offer</p>")).toBeGreaterThan(body!.indexOf(planted.sentence));
+      // A real button with a text label, and a polite live region for the outcome.
+      expect(body).toMatch(new RegExp(`<button type="button" class="copy-button">${COPY_LABEL}<span class="visually-hidden">`));
+      expect(body).toContain('role="status" aria-live="polite"');
+    }
+    // Each counter-offer has its own id, so a failed copy can select the right one.
+    const ids = [...html.matchAll(/class="flag-counter" id="([^"]+)"/g)].map((m) => m[1]);
+    expect(new Set(ids).size).toBe(flags.length);
+  });
+
+  it("does not render a flag that has no counter-offer; its red line shows as unavailable", async () => {
+    const { flags, receipt } = await analysed();
+    // A red line with one flag, so dropping it leaves the red line with no shown flag.
+    const first = flags.find((f) => flags.filter((g) => g.redLineId === f.redLineId).length === 1)!;
+    const rest = flags.filter((f) => f !== first);
+    const html = render([{ ...first, counterOffer: "  " }, ...rest], receipt);
+    expect([...html.matchAll(/<li class="flag"/g)]).toHaveLength(rest.length);
+    expect(decode(html)).not.toContain(first.statement);
+    const rows = receiptRows(html);
+    const row = rows.find(([, body]) => decode(body).includes(first.redLineTitle));
+    expect(row?.[0]).toBe("unavailable");
+  });
+
   it("carries both fixed statements word for word", () => {
     const seen = readerText(render([]));
     expect(seen).toContain(
@@ -181,6 +218,8 @@ describe("ResultView", () => {
     const silent = await analysed(benign.text, analysisPayload(redLines.map((r) => r.id), [], []));
     const quoted = (r: typeof withFlags) => [
       ...r.flags.map((f) => f.sourceSentence),
+      // Counter-offers are contract drafting, exempt from the banned-word check (BUILD-REPORT.md B10).
+      ...r.flags.map((f) => f.counterOffer),
       ...r.receipt.flatMap((l) => (l.kind === "addressed" ? [l.sentence] : [])),
     ];
     const cases: Array<[typeof withFlags, string]> = [
@@ -195,7 +234,9 @@ describe("ResultView", () => {
       expect(findBannedWord(own), own).toBeNull();
       expect(own).not.toMatch(/\bno issues\b/i);
     }
-    for (const copy of [DOES_NOT_MENTION, RESULT_UNAVAILABLE]) expect(findBannedWord(copy)).toBeNull();
+    for (const copy of [DOES_NOT_MENTION, RESULT_UNAVAILABLE, COUNTER_OFFER_HINT, COPY_LABEL, COPIED_MESSAGE, COPY_FAILED_MESSAGE]) {
+      expect(findBannedWord(copy), copy).toBeNull();
+    }
   });
 });
 
@@ -205,6 +246,25 @@ describe("stored analyses read back", () => {
     const stored = JSON.parse(JSON.stringify([...flags, { ...flags[0], offset: 3 }, { tier: "High" }]));
     expect(parseStoredFlags(stored, text)).toEqual(flags);
     expect(parseStoredFlags(null, text)).toEqual([]);
+  });
+
+  it("keep every counter-offer through the round trip, so a reopened document shows the same ones", async () => {
+    const flags = await analysedFlags();
+    const reopened = parseStoredFlags(JSON.parse(JSON.stringify(flags)), text);
+    expect(reopened.map((f) => f.counterOffer)).toEqual(flags.map((f) => f.counterOffer));
+    expect(reopened.map((f) => f.counterOffer).sort()).toEqual(sidecar.flags.map((f) => f.counterOffer).sort());
+    const counters = (html: string) => [...html.matchAll(/<p class="flag-counter" id="[^"]+">([\s\S]*?)<\/p>/g)].map((m) => m[1]);
+    expect(counters(render(reopened))).toEqual(counters(render(flags)));
+  });
+
+  it("drop a stored flag whose counter-offer is missing, empty or not a string, as malformed", async () => {
+    const flags = await analysedFlags();
+    const [a, b, c, ...rest] = JSON.parse(JSON.stringify(flags));
+    delete a.counterOffer;
+    b.counterOffer = " ";
+    c.counterOffer = 7;
+    const read = parseStoredFlags([a, b, c, ...rest], text);
+    expect(read).toEqual(flags.slice(3));
   });
 
   it("round-trip the receipt through JSON unchanged", async () => {

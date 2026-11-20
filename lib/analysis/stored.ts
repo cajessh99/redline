@@ -14,7 +14,7 @@ function str(value: unknown): string | null {
   return typeof value === "string" ? value : null;
 }
 
-/** Flags from a stored analysis whose shape is right and whose source is verbatim at its offset. */
+/** Flags from a stored analysis whose shape is right, with a counter-offer, and whose source is verbatim at its offset. */
 export function parseStoredFlags(value: unknown, storedText: string): Flag[] {
   if (!Array.isArray(value)) return [];
   const flags: Flag[] = [];
@@ -25,9 +25,12 @@ export function parseStoredFlags(value: unknown, storedText: string): Flag[] {
     const tier = str(item.tier);
     const statement = str(item.statement);
     const sourceSentence = str(item.sourceSentence);
-    const counterOffer = str(item.counterOffer) ?? "";
+    const counterOffer = str(item.counterOffer);
     const offset = typeof item.offset === "number" ? item.offset : -1;
     if (!redLineId || !redLineTitle || !statement || !sourceSentence) continue;
+    // Every flag shown has its counter-offer (ticket 05). A stored flag without one is malformed
+    // and left out, the same as one whose source no longer verifies.
+    if (!counterOffer || counterOffer.trim() === "") continue;
     if (!tier || !(TIERS as readonly string[]).includes(tier)) continue;
     if (!isVerbatimAt(storedText, sourceSentence, offset)) continue;
     flags.push({ redLineId, redLineTitle, tier: tier as Tier, statement, sourceSentence, offset, counterOffer });
