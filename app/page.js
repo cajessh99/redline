@@ -1,5 +1,6 @@
 import Link from "next/link";
 import FlaggedPage from "./flagged-page";
+import LandingAnalytics from "./landing-analytics";
 import { defaultRedLines, flags, receipt } from "./sample";
 
 export default function Landing() {
@@ -123,6 +124,7 @@ export default function Landing() {
           <p className="close-note">Your file is read in your browser, and only its text is kept.</p>
         </section>
       </main>
+      <LandingAnalytics />
     </>
   );
 }

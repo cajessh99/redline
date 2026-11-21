@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import Landing from "../../app/page.js";
@@ -103,8 +104,20 @@ describe("landing page", () => {
     expect(text).not.toMatch(/\b\d[\d,]*\+?\s+(users|freelancers|contracts checked|people)\b/i);
   });
 
-  it("loads no analytics or tracking script", () => {
+  it("loads only Vercel's cookieless analytics, nothing else", () => {
+    // Vercel's analytics injects its script from the browser after load (tests/landing/analytics.test.ts
+    // proves the landing page renders it), so the server markup carries no script tag of any kind.
     expect(html).not.toMatch(/<script/i);
-    expect(html).not.toMatch(/analytics|gtag|googletagmanager|plausible|segment/i);
+    expect(html).not.toMatch(/gtag|googletagmanager|plausible|segment|mixpanel|posthog|hotjar|cookie/i);
+
+    // The only analytics or tracking package installed is Vercel's.
+    const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
+    const installed = Object.keys({ ...pkg.dependencies, ...pkg.devDependencies });
+    const trackers = installed.filter((name) =>
+      /analytics|gtag|tag-?manager|plausible|segment|mixpanel|posthog|hotjar|amplitude|umami|fathom|matomo|cookie/i.test(
+        name,
+      ),
+    );
+    expect(trackers).toEqual(["@vercel/analytics"]);
   });
 });
