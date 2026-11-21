@@ -2,6 +2,8 @@ import type { Flag, ReceiptLine } from "../../lib/analysis/analyse.ts";
 import type { CheckedRedLine } from "../../lib/analysis/run.ts";
 import { isVerbatimAt } from "../../lib/analysis/stored.ts";
 import { CopyButton } from "./copy-button.tsx";
+import { SourceLink } from "./source-links.tsx";
+import { flagOriginId, receiptOriginId, type CitedSource } from "./source-jump.ts";
 
 /** The fixed statement from the spec (story 54). Word for word; the one use of a banned word. */
 export const PROOF_STATEMENT =
@@ -25,7 +27,7 @@ export const RESULT_UNAVAILABLE =
 export const COUNTER_OFFER_HINT =
   "Each flag ends with a counter-offer: replacement wording for the quoted sentence that you can paste into your reply.";
 
-type Props = {
+export type ResultViewProps = {
   /** The stored text the flags were checked against. Every quoted sentence is checked against it again here. */
   storedText: string;
   party: string;
@@ -35,7 +37,7 @@ type Props = {
 };
 
 type ReceiptRow =
-  | { kind: "addressed"; id: string; title: string; sentence: string }
+  | { kind: "addressed"; id: string; title: string; sentence: string; offset: number }
   | { kind: "not_mentioned"; id: string; title: string }
   | { kind: "unavailable"; id: string; title: string };
 
@@ -70,10 +72,43 @@ function receiptRows(storedText: string, flagged: Set<string>, receipt: ReceiptL
       const line = valid.find((l) => l.redLineId === redLine.id);
       if (!line) return { kind: "unavailable", id: redLine.id, title: redLine.title };
       if (line.kind === "addressed") {
-        return { kind: "addressed", id: redLine.id, title: redLine.title, sentence: line.sentence };
+        return { kind: "addressed", id: redLine.id, title: redLine.title, sentence: line.sentence, offset: line.offset };
       }
       return { kind: "not_mentioned", id: redLine.id, title: redLine.title };
     });
+}
+
+/** The flags that are shown: verbatim at their offset, with a counter-offer. */
+export function shownFlags(storedText: string, flags: Flag[]): Flag[] {
+  return flags.filter(
+    (flag) => isVerbatimAt(storedText, flag.sourceSentence, flag.offset) && flag.counterOffer.trim() !== "",
+  );
+}
+
+function flagSource(flag: Flag): CitedSource {
+  return { kind: "flag", originId: flagOriginId(flag.redLineId, flag.offset), sentence: flag.sourceSentence, offset: flag.offset };
+}
+
+function receiptSource(row: { id: string; sentence: string; offset: number }): CitedSource {
+  return { kind: "receipt", originId: receiptOriginId(row.id), sentence: row.sentence, offset: row.offset };
+}
+
+/**
+ * Every sentence the result quotes, in the order shown: each shown flag's source sentence, then
+ * each receipt line's addressing sentence. Each gets a link into the full text.
+ */
+export function citedSources(
+  storedText: string,
+  flags: Flag[],
+  receipt: ReceiptLine[],
+  checkedRedLines: CheckedRedLine[],
+): CitedSource[] {
+  const shown = shownFlags(storedText, flags);
+  const flagged = new Set(shown.map((flag) => flag.redLineId));
+  const fromReceipt = receiptRows(storedText, flagged, receipt, checkedRedLines).flatMap((row) =>
+    row.kind === "addressed" ? [receiptSource(row)] : [],
+  );
+  return [...shown.map(flagSource), ...fromReceipt];
 }
 
 /**
@@ -84,10 +119,8 @@ function receiptRows(storedText: string, flagged: Set<string>, receipt: ReceiptL
  * counter-offer and a button that copies it; a flag with no counter-offer is malformed and is not
  * rendered either.
  */
-export function ResultView({ storedText, party, flags, receipt, checkedRedLines }: Props) {
-  const shown = flags.filter(
-    (flag) => isVerbatimAt(storedText, flag.sourceSentence, flag.offset) && flag.counterOffer.trim() !== "",
-  );
+export function ResultView({ storedText, party, flags, receipt, checkedRedLines }: ResultViewProps) {
+  const shown = shownFlags(storedText, flags);
   const flagged = new Set(shown.map((flag) => flag.redLineId));
   const rows = receiptRows(storedText, flagged, receipt, checkedRedLines);
   // Titles come from the red lines as they were when this check ran (the stored snapshot), never
@@ -120,6 +153,7 @@ export function ResultView({ storedText, party, flags, receipt, checkedRedLines 
                 <blockquote className="flag-source">
                   <p>{flag.sourceSentence}</p>
                 </blockquote>
+                <SourceLink source={flagSource(flag)} />
                 <p className="slip-label flag-counter-label">Counter-offer</p>
                 <p className="flag-counter" id={counterId}>
                   {flag.counterOffer}
@@ -156,6 +190,7 @@ export function ResultView({ storedText, party, flags, receipt, checkedRedLines 
                     <blockquote className="receipt-source">
                       <p>{row.sentence}</p>
                     </blockquote>
+                    <SourceLink source={receiptSource(row)} />
                   </>
                 ) : (
                   <p className="receipt-note">{row.kind === "not_mentioned" ? DOES_NOT_MENTION : RESULT_UNAVAILABLE}</p>

@@ -5,6 +5,8 @@ import { DOES_NOT_SAY, MAX_QUESTION_CHARS } from "../../lib/analysis/answer.ts";
 import { ASK_ERROR_MESSAGES, type AskedQuestion } from "../../lib/analysis/ask.ts";
 import { isVerbatimAt } from "../../lib/analysis/stored.ts";
 import { CheckError } from "./check-error.tsx";
+import { questionOriginId, type CitedSource } from "./source-jump.ts";
+import { SourceLink, useReportQuestionSources } from "./source-links.tsx";
 
 /** Every line the question box shows. Run through the humanizer skill; checked for banned words in tests. */
 export const QUESTION_COPY = {
@@ -74,6 +76,14 @@ function shownAnswer(storedText: string, asked: AskedQuestion) {
   return null;
 }
 
+/** The cited sentence of an answer that is shown, as a source the full text can highlight. */
+function answerSource(storedText: string, asked: Listed): CitedSource | null {
+  const answered = shownAnswer(storedText, asked);
+  return answered
+    ? { kind: "question", originId: questionOriginId(asked.key), sentence: answered.citation, offset: answered.offset }
+    : null;
+}
+
 function announcement(storedText: string, asked: AskedQuestion): string {
   const answered = shownAnswer(storedText, asked);
   return answered ? `${answered.answer} ${QUESTION_COPY.sourceLabel}: ${answered.citation}` : DOES_NOT_SAY;
@@ -96,6 +106,7 @@ export function QuestionBox({ storedText, party, initial = [], endpoint, kept }:
   const field = useRef<HTMLTextAreaElement>(null);
   const idBase = useId();
   const ids = { heading: `${idBase}-heading`, field: `${idBase}-question`, hint: `${idBase}-hint`, error: `${idBase}-error` };
+  useReportQuestionSources(listed.flatMap((asked) => answerSource(storedText, asked) ?? []));
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -172,6 +183,7 @@ export function QuestionBox({ storedText, party, initial = [], endpoint, kept }:
         <ol className="question-list" aria-label={QUESTION_COPY.listLabel}>
           {listed.map((asked) => {
             const answered = shownAnswer(storedText, asked);
+            const source = answerSource(storedText, asked);
             return (
               <li key={asked.key} className="question-item" data-kind={answered ? "answered" : "does_not_say"}>
                 <h3 className="question-asked">{asked.question}</h3>
@@ -183,6 +195,7 @@ export function QuestionBox({ storedText, party, initial = [], endpoint, kept }:
                     <blockquote className="flag-source">
                       <p>{answered.citation}</p>
                     </blockquote>
+                    {source ? <SourceLink source={source} /> : null}
                   </>
                 ) : (
                   <p className="question-answer">{DOES_NOT_SAY}</p>

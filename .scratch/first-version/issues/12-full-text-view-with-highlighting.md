@@ -4,9 +4,9 @@
 
 **Blocked by:** 03
 
-**Status:** ready-for-agent
+**Status:** done (2026-11-20; not checked by eye in a browser)
 
-- [ ] The full stored text is viewable from the result page
-- [ ] Clicking a source sentence scrolls to it and highlights it, using the stored character offset
-- [ ] The highlighted span is exactly the source sentence and nothing else
-- [ ] Receipt addressing sentences and question citations can be highlighted the same way
+- [x] The full stored text is viewable from the result page
+- [x] Clicking a source sentence scrolls to it and highlights it, using the stored character offset
+- [x] The highlighted span is exactly the source sentence and nothing else
+- [x] Receipt addressing sentences and question citations can be highlighted the same way

@@ -9,7 +9,7 @@ import { INTAKE_REFUSAL_MESSAGES, normalisePastedText } from "../../lib/intake/t
 import { checkTitle, MAX_TITLE_CHARS, suggestTitle } from "../../lib/intake/title.ts";
 import { CheckError } from "../analysis/check-error.tsx";
 import { QuestionBox } from "../analysis/question-box.tsx";
-import { ResultView } from "../analysis/result-view.tsx";
+import { ReadingDesk } from "../analysis/reading-desk.tsx";
 import { ChangeParty } from "./change-party.tsx";
 import { chosenParty, NO_PARTY, partyFocusId, PartyPicker, partyProblem, type PartyChoice, type PartyProblem } from "./party-picker.tsx";
 import { postCheck, type CheckResult } from "./post-check.ts";
@@ -171,30 +171,28 @@ export function CheckFlow({ accountsOpen, signedIn = false }: Props) {
           <SavedLine saved={stage.result.saved} accountsOpen={accountsOpen} />
           <ChangeParty candidates={stage.candidates} currentParty={stage.result.party} rerun={rerun} />
         </div>
-        <div className="check-sheet">
-          <ResultView
-            storedText={stage.text}
-            party={stage.result.party}
-            flags={stage.result.flags}
-            receipt={stage.result.receipt}
-            checkedRedLines={stage.result.checkedRedLines}
-          />
-        </div>
-        <div className="check-sheet question-sheet">
-          {/* A saved result is asked about from its stored text, and the questions are kept with it.
-              Otherwise the text on this page is sent with each question and nothing is kept. */}
-          <QuestionBox
-            key={saved.kind === "saved" ? saved.documentId : "not-saved"}
-            storedText={stage.text}
-            party={stage.result.party}
-            endpoint={
-              saved.kind === "saved"
-                ? { url: `/api/documents/${saved.documentId}/questions`, body: {} }
-                : { url: "/api/questions", body: { text: stage.text, party: stage.result.party } }
-            }
-            kept={saved.kind === "saved"}
-          />
-        </div>
+        <ReadingDesk
+          storedText={stage.text}
+          party={stage.result.party}
+          flags={stage.result.flags}
+          receipt={stage.result.receipt}
+          checkedRedLines={stage.result.checkedRedLines}
+          // A saved result is asked about from its stored text, and the questions are kept with it.
+          // Otherwise the text on this page is sent with each question and nothing is kept.
+          questions={
+            <QuestionBox
+              key={saved.kind === "saved" ? saved.documentId : "not-saved"}
+              storedText={stage.text}
+              party={stage.result.party}
+              endpoint={
+                saved.kind === "saved"
+                  ? { url: `/api/documents/${saved.documentId}/questions`, body: {} }
+                  : { url: "/api/questions", body: { text: stage.text, party: stage.result.party } }
+              }
+              kept={saved.kind === "saved"}
+            />
+          }
+        />
         <p className="check-again">
           <button type="button" className="action" onClick={startOver}>
             Check another contract
