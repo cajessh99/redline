@@ -3,9 +3,46 @@
 Started 2026-11-20 while the owner was away. Tickets live in `.scratch/first-version/issues/`;
 the brief every implementing agent received is `.scratch/first-version/build-brief.md`.
 
+## Summary
+
+All 14 tickets are built, and none is blocked. The criteria that need Supabase or Vercel have not
+been verified, and each ticket file says which ones. At the last commit:
+
+- `npm run typecheck` passes.
+- `npm test` passes: 36 files, 473 tests, no key needed.
+- `npm run build` passes.
+- `npm run smoke` against the real model returned 6 verified flags and 1 receipt line, and answered 3
+  questions. Details are under "Real-model smoke run".
+
+Every ticket was built by a subagent from `.scratch/first-version/build-brief.md` plus a
+ticket-specific brief. Each was then checked here (typecheck, full suite, build, and a search of
+the diff for stubs and TODOs) before its commit. No ticket failed verification or needed a second
+attempt. The ticket 08 agent hit a usage limit partway through and was resumed with its work intact.
+The code review step was skipped, as instructed.
+
 ## Ticket status
 
-(Filled in as each ticket is verified and committed.)
+| Ticket | Status | Not verified |
+|---|---|---|
+| 01 Scaffold and sign-in | Done | Live Supabase sign-up, sign-in and sign-out; Vercel deploy |
+| 02 Analysis boundary and source verification | Done | — |
+| 03 Plain-text upload to verified flags | Done | Storage against live Supabase |
+| 04 Receipt | Done | — |
+| 05 Counter-offers | Done | Copy button in a real browser |
+| 06 PDF and Word intake | Done | pdf.js worker in a real browser |
+| 07 Party selection | Done | Stored-document rerun against live Supabase |
+| 08 Stored red lines: view and switch | Done | Live Supabase |
+| 09 Red-line editing | Done | Live Supabase |
+| 10 Library | Done | Live Supabase |
+| 11 Question box | Done | Storage against live Supabase |
+| 12 Full-text view with highlighting | Done | Scrolling and focus in a real browser |
+| 13 Landing page | Done | Vercel deploy |
+| 14 Landing page analytics | Done | Page views in the Vercel dashboard |
+
+No screen has been checked visually in a browser. The run instructions ruled out an impeccable
+direction round, and the Chrome extension was not connected. Layout at phone width, contrast and
+focus were checked by reading the CSS and computing ratios from DESIGN.md's hex values. The
+rendered markup was checked in tests. Expect visual fixes on the first look.
 
 ## Decisions taken in the owner's absence
 
@@ -119,12 +156,91 @@ account, questions on `/check` are answered and nothing is stored, the same as a
 - `NEXT_PUBLIC_*` values are baked in at build time, so rebuild or redeploy after setting them.
 - No Vercel deploy was made from this run.
 - Row-level security is tested against the real migration SQL in PGlite, with a stand-in for
-  Supabase's `auth` schema. The real `auth` schema has not been tested.
+  Supabase's `auth` schema. The real `auth` schema has not been tested. Migrations 0001 to 0007
+  have never run in Supabase's SQL editor.
+- Seeding red lines at first sign-in (ticket 08) runs on the sign-in, sign-up and confirm paths,
+  and none of them has run against a live project.
+- Vercel Web Analytics may need switching on in the Vercel project settings before page views show.
+- `maxDuration` on the analyse route is 300 seconds. Check that the Vercel plan allows it.
+- No screen has been looked at in a browser (see the summary).
+
+What was verified without Supabase: the app starts with both Supabase variables empty. A live
+`POST /api/analyse` on the production server with the benign fixture returned 200, with 0 flags, a
+5-line receipt, every line addressed and verbatim, and nothing stored. `/library` redirects to
+sign-in, and sign-in says accounts aren't open yet. The OpenRouter key does not appear anywhere
+under `.next/static`.
 
 ## Real-model smoke run
 
-(Filled in at the end.)
+`OPENROUTER_API_KEY` is set, so `npm run smoke` ran against the real model. The model id comes from
+`OPENROUTER_MODEL` (`z-ai/glm-5.3-flash`), pinned to Fireworks with no fallbacks and low reasoning
+effort. The fixture is the one-sided agreement read as Contractor, which has 7 planted clauses.
+
+| Run | When | Flags shown | Regenerated | Dropped | Missed |
+|---|---|---|---|---|---|
+| 1 | after ticket 03 | 6 | 1 | 0 | non-compete Minor (employee non-solicit) |
+| 2 | after ticket 04 | 7 | 1 | 0 | none |
+| 3 | final | 6 | 2 | 0 | non-compete Minor (employee non-solicit) |
+
+- Every flag shown in every run was verbatim at its offset. No unverified sentence ever reached
+  the output.
+- In the final run, 4 candidates verified on the first pass and 2 were misquoted, regenerated, and
+  verified. None was dropped.
+- Every shown tier matched the sidecar's expected tier.
+- The receipt line for termination quoted the fair termination sentence verbatim in every run.
+- One analysis takes about 10 seconds.
+
+The same Minor clause was missed in two of three runs. That is precision over recall working as
+D7 intends, but it shows recall varies from run to run (T2 territory).
+
+Questions, final run:
+- "How many days does Client have to pay an invoice?" Answered, citing the 75-day sentence
+  verbatim.
+- "Is this clause normal?" "The document does not say."
+- "What happens if a dispute goes to court in Germany?" Answered, citing the venue sentence
+  verbatim. The answer also says the agreement "is governed by the laws of that state". That is
+  true of the document, but it comes from a different sentence than the one cited. The citation
+  verifies, and the answer still claims more than that one sentence holds. Code can't catch this.
+  It is recorded as QUESTIONS.md Q9, and T6 and T7 should watch for it.
+
+## Questions left for the owner
+
+All are in `QUESTIONS.md`, each with a recommended default, and the build used that default:
+- Q1: paste as well as upload (answered by inference)
+- Q2: dependencies
+- Q3: where "Check a contract" leads
+- Q4: "does not mention" rests on the model alone
+- Q5: model id
+- Q6: offered red lines have no "matches when" wording
+- Q7: scanned-PDF threshold, and OCR'd scans slip through
+- Q8: PRD tier wording uses the banned word "may"
+- Q9: answers that say more than their one citation
+
+Other points to look at:
+- The suite imports `vite` (in `vitest.config.ts`) and PDF intake uses `@napi-rs/canvas`. Neither
+  is listed in `package.json`. `vite` arrives with vitest, and `@napi-rs/canvas` is an optional
+  dependency of pdfjs-dist that text extraction never calls.
+- The app shell brief describes index tabs on the result's full text. Ticket 12 built highlighting
+  without them, because adding them would redesign the result view, which no ticket asked for.
+- Party candidates are found by pattern, not by the model. A contract that names its parties
+  unusually shows no candidates, and the reader types their role.
 
 ## First commands to run when you sit down
 
-(Filled in at the end.)
+```
+npm install
+npm test
+npm run build
+npm run smoke
+npm run dev            # then open http://localhost:3000/check and try a PDF, a .docx and a paste
+```
+
+Then, to turn on accounts:
+1. Create a Supabase project. Put its URL and anon key in `.env.local` as
+   `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+2. Run `supabase/migrations/0001_readers.sql` through `0007_questions.sql` in order, in the SQL editor.
+3. Under Authentication > URL Configuration, add `http://localhost:3000/auth/confirm` (and the
+   production URL later) to the allowed redirect URLs.
+4. Restart `npm run dev`. `NEXT_PUBLIC_*` values are read at build time, so rebuild for production.
+5. Sign up, confirm the email, check `/red-lines` shows 5 on and 6 off, check a contract, and see
+   it in `/library`. Then sign up a second account and confirm it sees nothing of the first.

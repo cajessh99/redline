@@ -99,3 +99,18 @@ the build shows it unchanged. Redline's own labels on that page use no banned wo
 - **B. Reword those tier sentences in PRD section 5** (for example "is barred from working for
   other clients"), then update `lib/red-lines/defaults.ts`. Readers whose lists were already
   seeded keep the old wording until "restore defaults" (ticket 09).
+
+## Q9. An answer can say more than the one sentence it cites (2026-11-20)
+
+In the final smoke run, the question "What happens if a dispute goes to court in Germany?" got an
+answer that cited the venue sentence verbatim, and the answer also said the agreement is governed
+by that state's laws. That is true of the document, but it comes from a different sentence. The
+citation check proves the cited sentence exists. It can't prove the answer stays inside that
+sentence. The same gap applies to flag statements and counter-offers (T7).
+
+- **A. Keep one citation per answer and measure it in T6 and T7 (recommended default).** Nothing
+  changes in code. The owner's review of the test set counts how often it happens.
+- **B. Allow several citations per answer**, each verified, so an answer drawing on two sentences
+  shows both. A schema and UI change.
+- **C. Tighten the prompt** to answer only from the cited sentence. Cheap, but it relies on the
+  model following instructions, which the trust rules try not to depend on.
