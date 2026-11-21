@@ -3,7 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Flag, ReceiptLine } from "../../../lib/analysis/analyse.ts";
+import type { AskedQuestion } from "../../../lib/analysis/ask.ts";
 import type { CheckedRedLine } from "../../../lib/analysis/run.ts";
+import { QuestionBox } from "../../analysis/question-box.tsx";
 import { ResultView } from "../../analysis/result-view.tsx";
 import { ChangeParty } from "../../check/change-party.tsx";
 import { postCheck } from "../../check/post-check.ts";
@@ -17,6 +19,8 @@ type Props = Shown & {
   title: string;
   storedText: string;
   candidates: string[];
+  /** Questions asked about this document, newest first, re-verified against the stored text. */
+  questions: AskedQuestion[];
 };
 
 /**
@@ -24,7 +28,7 @@ type Props = Shown & {
  * lines" and delete. A rerun happens on the server against the stored text; the new result
  * replaces this one on screen and is what the page shows from now on.
  */
-export function DocumentResult({ documentId, title, storedText, candidates, ...initial }: Props) {
+export function DocumentResult({ documentId, title, storedText, candidates, questions, ...initial }: Props) {
   const [shown, setShown] = useState<Shown>(initial);
   const router = useRouter();
 
@@ -56,6 +60,15 @@ export function DocumentResult({ documentId, title, storedText, candidates, ...i
           flags={shown.flags}
           receipt={shown.receipt}
           checkedRedLines={shown.checkedRedLines}
+        />
+      </div>
+      <div className="check-sheet question-sheet">
+        <QuestionBox
+          storedText={storedText}
+          party={shown.party}
+          initial={questions}
+          endpoint={{ url: `/api/documents/${documentId}/questions`, body: {} }}
+          kept
         />
       </div>
       <DeleteDocument documentId={documentId} />

@@ -8,6 +8,7 @@ import { CONTRACT_FILE_ACCEPT } from "../../lib/intake/formats.ts";
 import { INTAKE_REFUSAL_MESSAGES, normalisePastedText } from "../../lib/intake/text-file.ts";
 import { checkTitle, MAX_TITLE_CHARS, suggestTitle } from "../../lib/intake/title.ts";
 import { CheckError } from "../analysis/check-error.tsx";
+import { QuestionBox } from "../analysis/question-box.tsx";
 import { ResultView } from "../analysis/result-view.tsx";
 import { ChangeParty } from "./change-party.tsx";
 import { chosenParty, NO_PARTY, partyFocusId, PartyPicker, partyProblem, type PartyChoice, type PartyProblem } from "./party-picker.tsx";
@@ -162,6 +163,7 @@ export function CheckFlow({ accountsOpen, signedIn = false }: Props) {
   }
 
   if (stage.kind === "result") {
+    const saved = stage.result.saved;
     return (
       <>
         <div className="check-intro">
@@ -176,6 +178,21 @@ export function CheckFlow({ accountsOpen, signedIn = false }: Props) {
             flags={stage.result.flags}
             receipt={stage.result.receipt}
             checkedRedLines={stage.result.checkedRedLines}
+          />
+        </div>
+        <div className="check-sheet question-sheet">
+          {/* A saved result is asked about from its stored text, and the questions are kept with it.
+              Otherwise the text on this page is sent with each question and nothing is kept. */}
+          <QuestionBox
+            key={saved.kind === "saved" ? saved.documentId : "not-saved"}
+            storedText={stage.text}
+            party={stage.result.party}
+            endpoint={
+              saved.kind === "saved"
+                ? { url: `/api/documents/${saved.documentId}/questions`, body: {} }
+                : { url: "/api/questions", body: { text: stage.text, party: stage.result.party } }
+            }
+            kept={saved.kind === "saved"}
           />
         </div>
         <p className="check-again">

@@ -1,4 +1,6 @@
-// Runs the fixture contract through the real analysis boundary and prints what a reader would see.
+// Runs the fixture contract through the real analysis boundary and prints what a reader would see,
+// then asks the question box three questions: one the fixture answers, one about whether a clause
+// is normal, and one the fixture does not answer.
 //
 //   npm run smoke    (loads .env.local when it exists)
 //
@@ -7,13 +9,19 @@
 // the key. Exit code 1 when the analysis returns an error.
 import { readFileSync } from "node:fs";
 import { analyse } from "../lib/analysis/analyse.ts";
+import { answer, DOES_NOT_SAY } from "../lib/analysis/answer.ts";
 import type { ModelClient } from "../lib/analysis/model.ts";
 import { OpenRouterClient } from "../lib/analysis/openrouter-client.ts";
 import { normaliseText } from "../lib/intake/normalise.ts";
 import { defaultEnabledRedLines } from "../lib/red-lines/defaults.ts";
-import { fakeModel, sidecarPayload, type Sidecar } from "../tests/support/fake-model.ts";
+import { sidecarPayload, type Sidecar } from "../tests/support/fake-model.ts";
 
 const PARTY = "Contractor";
+const QUESTIONS = [
+  "How many days does Client have to pay an invoice?",
+  "Is this clause normal?",
+  "What happens if a dispute goes to court in Germany?",
+];
 const fixtures = new URL("../tests/fixtures/", import.meta.url);
 const text = normaliseText(readFileSync(new URL("one-sided-services-agreement.txt", fixtures), "utf8"));
 
@@ -29,7 +37,18 @@ if (apiKey && modelName) {
   const sidecar = JSON.parse(
     readFileSync(new URL("one-sided-services-agreement.flags.json", fixtures), "utf8"),
   ) as Sidecar;
-  model = fakeModel(sidecarPayload(sidecar));
+  // Analysis calls get the sidecar's flags; question calls (metadata.question) get a faithful
+  // answer for the first question and no answer for the others.
+  const paySentence = sidecar.flags.find((flag) => flag.sentence.includes("seventy-five"))?.sentence ?? null;
+  model = {
+    async completeJson(request) {
+      if (request.metadata?.question === undefined) return sidecarPayload(sidecar);
+      if (request.metadata.question === QUESTIONS[0]) {
+        return { answer: "Client has 75 days after receiving an approved invoice to pay it.", citation: paySentence };
+      }
+      return { answer: null, citation: null };
+    },
+  };
   label = "FAKE MODEL (built from the fixture sidecar)";
   const missing = [apiKey ? null : "OPENROUTER_API_KEY", modelName ? null : "OPENROUTER_MODEL"].filter(Boolean);
   console.log(`Not set: ${missing.join(", ")}. Using the FAKE MODEL.`);
@@ -74,3 +93,29 @@ for (const line of result.receipt) {
 console.log("");
 console.log(`Checked: ${result.checkedRedLineIds.join(", ")}`);
 console.log(`Diagnostics: ${JSON.stringify(result.diagnostics)}`);
+
+console.log("");
+console.log(`Questions (party ${PARTY}):`);
+let questionFailed = false;
+for (const question of QUESTIONS) {
+  const asked = Date.now();
+  const outcome = await answer({ text, party: PARTY, question }, { model });
+  const took = ((Date.now() - asked) / 1000).toFixed(1);
+  console.log("");
+  console.log(`Q: ${question}`);
+  if (!outcome.ok) {
+    questionFailed = true;
+    console.log(`   ERROR after ${took}s (${outcome.error.kind}): ${outcome.error.message}`);
+    continue;
+  }
+  if (outcome.result.kind === "answered") {
+    const { answer: said, citation, offset } = outcome.result;
+    const verbatim = text.slice(offset, offset + citation.length) === citation;
+    console.log(`   A: ${said}`);
+    console.log(`   Citation (offset ${offset}, verbatim: ${verbatim ? "yes" : "NO"}): "${citation}"`);
+  } else {
+    console.log(`   A: ${DOES_NOT_SAY}`);
+  }
+  console.log(`   ${took}s, ${JSON.stringify(outcome.diagnostics)}`);
+}
+if (questionFailed) process.exit(1);

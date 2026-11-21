@@ -4,11 +4,11 @@
 
 **Blocked by:** 03
 
-**Status:** ready-for-agent
+**Status:** done (2026-11-20)
 
-- [ ] The boundary exposes an answer call taking a document text, a party, and a question
-- [ ] Every shown answer carries a cited sentence that passed the exact-match check
-- [ ] An answer with no citation, or a citation that fails after one regeneration, is shown as "the document does not say"
-- [ ] The prompt confines answers to the document and to the reader's party's side
-- [ ] Questions, answers, and citations are stored with the document and shown when it is reopened
-- [ ] Tested with the fake model client: a verified answer, a missing citation, and a misquoted citation
+- [x] The boundary exposes an answer call taking a document text, a party, and a question
+- [x] Every shown answer carries a cited sentence that passed the exact-match check
+- [x] An answer with no citation, or a citation that fails after one regeneration, is shown as "the document does not say"
+- [x] The prompt confines answers to the document and to the reader's party's side
+- [x] Questions, answers, and citations are stored with the document and shown when it is reopened
+- [x] Tested with the fake model client: a verified answer, a missing citation, and a misquoted citation

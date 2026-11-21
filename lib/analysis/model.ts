@@ -13,9 +13,10 @@ export type ModelRequest = {
   jsonSchema: JsonSchema;
   /**
    * Structured facts about the request, for tests and logs. Never sent to the provider: real
-   * clients ignore it. It lets a fake model answer per party without reading prompt wording.
+   * clients ignore it. It lets a fake model answer per party (and, for a question, per question)
+   * without reading prompt wording.
    */
-  metadata?: { party: string };
+  metadata?: { party: string; question?: string };
 };
 
 export interface ModelClient {

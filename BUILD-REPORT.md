@@ -104,6 +104,13 @@ because that would be a claim nothing supports.
 The first real-model run showed one regenerated candidate coming back as two flags. Regeneration
 now asks for one correction per failed candidate, each keyed to that candidate, and ignores extras.
 
+### B14. Answers follow the same rules as flag statements
+PRODUCT.md applies its banned-word list to answers too. An answer that uses a banned word is
+regenerated once, like a misquoted citation, and becomes "The document does not say." if the word
+comes back. An answer with no citation is shown as "The document does not say." That makes T6's
+trust rule work in code, so it doesn't depend on the model following the prompt. Without an
+account, questions on `/check` are answered and nothing is stored, the same as analysis (B3).
+
 ## Not verified (needs Supabase, Vercel, or a key)
 
 - Sign-up, sign-in, the confirmation email and global sign-out against a real Supabase project.

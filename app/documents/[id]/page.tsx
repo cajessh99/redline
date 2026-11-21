@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { notFound, redirect } from "next/navigation";
+import { loadStoredQuestions } from "../../../lib/analysis/ask.ts";
 import { openStoredResult } from "../../../lib/documents/library.ts";
 import { findPartyCandidates } from "../../../lib/intake/parties.ts";
 import { supabaseLibraryTransport } from "../../../lib/server/library-store.ts";
+import { supabaseQuestionStore } from "../../../lib/server/question-store.ts";
 import { createSupabaseServerClient } from "../../../lib/supabase/server.ts";
 import { MastheadLinks, SIGNED_IN_LINKS } from "../../auth/masthead-links.tsx";
 import { DocumentResult } from "./document-result.tsx";
@@ -12,6 +14,7 @@ export const metadata = { title: "Saved result · Redline" };
 
 /**
  * A stored document and its latest analysis, exactly as stored and with no model call (story 48),
+ * the questions asked about it (story 41; each citation checked against the stored text again),
  * with "Change my party", "Check again with my current red lines" and delete. Read under the
  * reader's own session, so row-level security decides what is visible: anything this reader
  * can't see is a 404, never a 403, so another reader's document is not shown to exist.
@@ -26,6 +29,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
 
   const stored = await openStoredResult(supabaseLibraryTransport(supabase), id);
   if (!stored) notFound();
+  const questions = await loadStoredQuestions(supabaseQuestionStore(supabase), stored.id, stored.storedText);
 
   return (
     <>
@@ -45,6 +49,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
           flags={stored.flags}
           receipt={stored.receipt}
           checkedRedLines={stored.checkedRedLines}
+          questions={questions}
         />
         <p className="check-again">
           <Link href="/check" className="action">

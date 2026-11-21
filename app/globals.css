@@ -1809,3 +1809,80 @@ h2.library-entry-title {
     padding-right: 16px;
   }
 }
+
+/* The question box: its own sheet under the result. Answers are ruled rows on the paper, no tier
+   ink (Ink Is Earned); a cited sentence is set like a flag's source sentence (.flag-source). */
+
+.question-sheet {
+  margin-top: clamp(20px, 3vw, 32px);
+}
+
+.question-box h2 {
+  font-size: clamp(1.4rem, 2vw, 1.75rem);
+  margin-bottom: 0.4rem;
+}
+
+.question-lead {
+  max-width: 40rem;
+}
+
+.question-note {
+  margin: 0 0 0.6rem;
+  max-width: 40rem;
+  font-size: 0.9375rem;
+  color: var(--toner-soft);
+}
+
+.question-form {
+  display: grid;
+  gap: 1rem;
+  max-width: 40rem;
+}
+
+.question-form .account-error {
+  margin: 0;
+}
+
+.question-form .field textarea {
+  min-height: 5.5rem;
+}
+
+.question-form .action {
+  justify-self: start;
+}
+
+.question-list {
+  list-style: none;
+  margin: 1.6rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.question-item {
+  padding: 1rem 0 1.1rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.question-item:last-child {
+  border-bottom: 0;
+}
+
+h3.question-asked {
+  margin: 0 0 0.5rem;
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+
+.question-answer {
+  margin: 0 0 0.75rem;
+  max-width: 40rem;
+  font-weight: 500;
+}
+
+.question-item[data-kind="does_not_say"] .question-answer {
+  margin-bottom: 0;
+}
